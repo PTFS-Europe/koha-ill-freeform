@@ -135,7 +135,7 @@ sub create {
 
         ## Validate
         my ( $brw_count, $brw )
-            = _validate_borrower($other->{'borrowernumber'});
+            = _validate_borrower($other->{'cardnumber'});
         my $result = {
             status  => "",
             message => "",
