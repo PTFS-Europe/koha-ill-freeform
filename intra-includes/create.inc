@@ -24,7 +24,7 @@
     <input name="stage" id="stage" value="form" type="hidden"/>
     <input name="method" id="method" value="create" type="hidden"/>
     <input name="backend" id="method" value="FreeForm" type="hidden"/>
-    <ol>
+    <ol id="freeform-fields">
       <li>
         <label class="required" for="title">Title:</label>
         <input type="text" name="title" id="title" value="" />
@@ -38,6 +38,10 @@
         <input type="text" name="identifier" id="identifier" value="" />
       </li>
     </ol>
+    <button type="button" id="add-new-fields" class="btn btn-default">
+      <span class="fa fa-plus"></span>
+      Add new field
+    </button> 
   </fieldset>
   <fieldset class="rows">
     <legend>Borrower options</legend>
@@ -67,6 +71,33 @@
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
   </fieldset>
 </form>
+[% BLOCK backend_jsinclude %]
+<script type="text/javascript">
+    // <![CDATA[]
+        $(document).ready(function() {
+            $('#add-new-fields').click(function(e) {
+                    console.log('hi');
+                e.preventDefault();
+                var row = '<li class="form-horizontal">' +
+                    '<input type="text" class="custom-name" name="custom_key">' +
+                    '<input type="text" name="custom_value" ' +
+                    'id="custom-value" /> '+
+                    '<button type="button" class="btn btn-danger btn-sm ' +
+                    'delete-new-field">' +
+                    '<span class="fa fa-delete">' +
+                    '</span>Delete</button></li>';
+                $('#freeform-fields').append(row);
+            });
+            $('#freeform-fields').on('click', '.delete-new-field',
+                function(event) {
+                    event.preventDefault();
+                    $(event.target).parent().remove();
+                }
+            );
+        });
+    // ]]>
+</script>
+[% END %]
 
 [% ELSIF whole.stage == "borrowers" %]
 <!-- We need to clarify the borrower that has been requested. -->
