@@ -131,8 +131,53 @@ sub create {
             value   => $params,
         };
     } elsif ( $stage eq 'form' ) {
-	# Received completed details of form.  Validate and create request.
-
+        # We may be recieving a submitted form due to an additional
+        # custom field being added or deleted, so check for that
+        if (defined $other->{'add_new_custom'}) {
+            my ($custom_keys, $custom_vals) = _get_custom(
+                $other->{'custom_key'},
+                $other->{'custom_value'}
+            );
+            push @{$custom_keys}, '---';
+            push @{$custom_vals}, '---';
+            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            my $result = {
+                status  => "",
+                message => "",
+                error   => 0,
+                value   => $params,
+                method  => "create",
+                stage   => "form",
+            };
+            return $result;
+        } elsif (defined $other->{'custom_delete'}) {
+            my $delete_idx = $other->{'custom_delete'};
+            my ($custom_keys, $custom_vals) = _get_custom(
+                $other->{'custom_key'},
+                $other->{'custom_value'}
+            );
+            splice @{$custom_keys}, $delete_idx, 1;
+            splice @{$custom_vals}, $delete_idx, 1;
+            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            my $result = {
+                status  => "",
+                message => "",
+                error   => 0,
+                value   => $params,
+                method  => "create",
+                stage   => "form",
+            };
+            return $result;
+        }
+    	# Received completed details of form.  Validate and create request.
+        # Get custom key / values we've been passed
+        # Prepare them for addition into the Illrequestattribute object
+        my $custom = _prepare_custom(
+            $other->{'custom_key'},
+            $other->{'custom_value'}
+        );
         ## Validate
         my ( $brw_count, $brw )
             = _validate_borrower($other->{'cardnumber'});
@@ -144,15 +189,15 @@ sub create {
             method  => "create",
             stage   => "init",
         };
-	if ( !$other->{'title'} ) {
+        if ( !$other->{'title'} ) {
             $result->{status} = "missing_title";
             $result->{value} = $params;
             return $result;
-	} elsif ( !$other->{'author'} ) {
+        } elsif ( !$other->{'author'} ) {
             $result->{status} = "missing_author";
             $result->{value} = $params;
             return $result;
-	} elsif ( !$other->{'identifier'} ) {
+        } elsif ( !$other->{'identifier'} ) {
             $result->{status} = "missing_identifier";
             $result->{value} = $params;
             return $result;
@@ -184,7 +229,7 @@ sub create {
         $request->borrowernumber($brw->borrowernumber);
         $request->branchcode($params->{other}->{branchcode});
         $request->status('NEW');
-	$request->backend($params->{other}->{backend});
+        $request->backend($params->{other}->{backend});
         $request->placed(DateTime->now);
         $request->updated(DateTime->now);
         $request->store;
@@ -196,6 +241,8 @@ sub create {
             title      => $params->{other}->{title},
             author     => $params->{other}->{author},
             identifier => $params->{other}->{identifier},
+            # Include the custom fields
+            %$custom
         };
         while ( my ( $type, $value ) = each %{$request_details} ) {
             Koha::Illrequestattribute->new({
@@ -350,6 +397,34 @@ sub _validate_borrower {
         $brw = $brws;           # found multiple results
     }
     return ( $count, $brw );
+}
+
+=head3 _get_custom
+
+=cut
+
+sub _get_custom {
+    # Take an string of custom keys and an string
+    # of custom values, both delimited by \0 (by CGI)
+    # and return an arrayref of each
+    my ($keys, $values) = @_;
+    my @k = defined $keys ? split("\0", $keys) : ();
+    my @v = defined $values ? split("\0", $values) : ();
+    return (\@k, \@v);
+}
+
+=head3 _prepare_custom
+
+=cut
+
+sub _prepare_custom {
+    # Take an arrayref of custom keys and an arrayref
+    # of custom values, return a hashref of them
+    my ($keys, $values) = @_;
+    my @k = split("\0", $keys);
+    my @v = split("\0", $values);
+    my %out = map { $k[$_] => $v[$_] } 0 .. $#k;
+    return \%out;
 }
 
 =head1 AUTHOR
