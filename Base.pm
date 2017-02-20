@@ -172,12 +172,6 @@ sub create {
             return $result;
         }
     	# Received completed details of form.  Validate and create request.
-        # Get custom key / values we've been passed
-        # Prepare them for addition into the Illrequestattribute object
-        my $custom = _prepare_custom(
-            $other->{'custom_key'},
-            $other->{'custom_value'}
-        );
         ## Validate
         my ( $brw_count, $brw )
             = _validate_borrower($other->{'cardnumber'});
@@ -189,41 +183,57 @@ sub create {
             method  => "create",
             stage   => "form",
         };
+        my $failed = 0;
         if ( !$other->{'title'} ) {
             $result->{status} = "missing_title";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( !$other->{'author'} ) {
             $result->{status} = "missing_author";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( !$other->{'identifier'} ) {
             $result->{status} = "missing_identifier";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( !$other->{'branchcode'} ) {
             $result->{status} = "missing_branch";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( !Koha::Libraries->find($other->{'branchcode'}) ) {
             $result->{status} = "invalid_branch";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( $brw_count == 0 ) {
             $result->{status} = "invalid_borrower";
             $result->{value} = $params;
-            return $result;
+            $failed = 1;
         } elsif ( $brw_count > 1 ) {
             # We must select a specific borrower out of our options.
             $params->{brw} = $brw;
             $result->{value} = $params;
             $result->{stage} = "borrowers";
             $result->{error} = 0;
-            return $result;
+            $failed = 1;
         };
+        if ($failed) {
+            my ($custom_keys, $custom_vals) = _get_custom(
+                $other->{'custom_key'},
+                $other->{'custom_value'}
+            );
+            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            return $result;
+        }
 
         ## Create request
 
+        # Get custom key / values we've been passed
+        # Prepare them for addition into the Illrequestattribute object
+        my $custom = _prepare_custom(
+            $other->{'custom_key'},
+            $other->{'custom_value'}
+        );
         # ...Populate Illrequest
         my $request = $params->{request};
         $request->borrowernumber($brw->borrowernumber);

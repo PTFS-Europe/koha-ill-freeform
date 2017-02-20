@@ -27,16 +27,28 @@
     <ol id="freeform-fields">
       <li>
         <label class="required" for="title">Title:</label>
-        <input type="text" name="title" id="title" value="" />
+        <input type="text" name="title" id="title" value="[% whole.value.other.title %]" />
       </li>
       <li>
         <label class="required" for="author">Author:</label>
-        <input type="text" name="author" id="author" value="" />
+        <input type="text" name="author" id="author" value="[% whole.value.other.author %]" />
       </li>
       <li>
         <label class="required" for="identifier">Identifier:</label>
-        <input type="text" name="identifier" id="identifier" value="" />
+        <input type="text" name="identifier" id="identifier" value="[% whole.value.other.identifier %]" />
       </li>
+      [% custom_keys = whole.value.other.custom_key_del.split('\t') %]
+      [% custom_values = whole.value.other.custom_value_del.split('\t') %]
+      [% i = 0 %]
+      [% FOR key IN custom_keys %]
+      <li class="form-horizontal">
+        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% custom_values.$i %]">
+        <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
+            <span class="fa fa-delete"></span>Delete
+        </button></li>
+      </li>
+      [% i = i + 1 %]
+      [% END %]
     </ol>
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
@@ -76,12 +88,10 @@
     // <![CDATA[]
         $(document).ready(function() {
             $('#add-new-fields').click(function(e) {
-                    console.log('hi');
                 e.preventDefault();
                 var row = '<li class="form-horizontal">' +
                     '<input type="text" class="custom-name" name="custom_key">' +
-                    '<input type="text" name="custom_value" ' +
-                    'id="custom-value" /> '+
+                    '<input type="text" name="custom_value" id="custom-value"> '+
                     '<button type="button" class="btn btn-danger btn-sm ' +
                     'delete-new-field">' +
                     '<span class="fa fa-delete">' +
