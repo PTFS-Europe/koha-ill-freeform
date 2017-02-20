@@ -187,7 +187,7 @@ sub create {
             error   => 1,
             value   => {},
             method  => "create",
-            stage   => "init",
+            stage   => "form",
         };
         if ( !$other->{'title'} ) {
             $result->{status} = "missing_title";
