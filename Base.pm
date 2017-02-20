@@ -90,11 +90,11 @@ illrequestattributes store.
 sub metadata {
     my ( $self, $request ) = @_;
     my $attrs = $request->illrequestattributes;
-    return {
-        Title      => $attrs->find({ type => 'title' })->value,
-        Author     => $attrs->find({ type => 'author' })->value,
-        Identifier => $attrs->find({ type => 'identifier' })->value,
+    my $metadata = {};
+    while ( my $attr = $attrs->next ) {
+        $metadata->{ucfirst($attr->type)} = $attr->value;
     }
+    return $metadata;
 }
 
 =head3 status_graph
