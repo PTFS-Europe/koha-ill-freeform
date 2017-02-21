@@ -54,8 +54,6 @@ well as the option to enter additional fields with arbitrary names & values.
 
 =cut
 
-sub update_status {}
-
 =head3 new
 
   my $backend = Koha::Illrequest::Backend::FreeForm->new;
