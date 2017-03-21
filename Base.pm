@@ -89,8 +89,23 @@ sub metadata {
     my ( $self, $request ) = @_;
     my $attrs = $request->illrequestattributes;
     my $metadata = {};
+    my $core_fields = {
+        type           => 'Type',
+        title          => 'Title',
+        author         => 'Author',
+        isbn           => 'ISBN',
+        issn           => 'ISSN',
+        part_edition   => 'Part / Edition',
+        volume         => 'Volume',
+        year           => 'Year',
+        article_title  => 'Part Title',
+        article_author => 'Part Author',
+        article_pages  => 'Part Pages',
+    };
     while ( my $attr = $attrs->next ) {
-        $metadata->{ucfirst($attr->type)} = $attr->value;
+        my $name;
+        $name = $core_fields->{$attr->type} || ucfirst($attr->type);
+        $metadata->{$name} = $attr->value;
     }
     return $metadata;
 }
@@ -186,12 +201,8 @@ sub create {
             $result->{status} = "missing_title";
             $result->{value} = $params;
             $failed = 1;
-        } elsif ( !$other->{'author'} ) {
-            $result->{status} = "missing_author";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( !$other->{'identifier'} ) {
-            $result->{status} = "missing_identifier";
+        } elsif ( !$other->{'type'} ) {
+            $result->{status} = "missing_type";
             $result->{value} = $params;
             $failed = 1;
         } elsif ( !$other->{'branchcode'} ) {
@@ -246,9 +257,17 @@ sub create {
         # The core fields
         # + each additional field added by user
         my $request_details = {
-            title      => $params->{other}->{title},
-            author     => $params->{other}->{author},
-            identifier => $params->{other}->{identifier},
+            title          => $params->{other}->{title},
+            type           => $params->{other}->{type},
+            author         => $params->{other}->{author},
+            year           => $params->{other}->{year},
+            volume         => $params->{other}->{volume},
+            part_edition   => $params->{other}->{part_edition},
+            isbn           => $params->{other}->{isbn},
+            issn           => $params->{other}->{issn},
+            article_title  => $params->{other}->{article_title},
+            article_author => $params->{other}->{article_author},
+            article_pages  => $params->{other}->{article_pages},
             # Include the custom fields
             %$custom
         };
