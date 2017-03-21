@@ -24,7 +24,29 @@
     <ol id="general-freeform-fields">
       <li>
         <label class="required" for="type">Type:</label>
-        <input type="text" name="type" id="type" value="[% whole.value.other.type %]" />
+        <select name="type" id="type">
+          <option value=""/>
+          [% IF whole.value.other.type == "Book" %]
+          <option value="Book" selected="selected">Book</option>
+          [% ELSE %]
+          <option value="Book">Book</option>
+          [% END %]
+          [% IF whole.value.other.type == "Article" %]
+          <option value="Article" selected="selected">Article</option>
+          [% ELSE %]
+          <option value="Article">Article</option>
+          [% END %]
+          [% IF whole.value.other.type == "Journal" %]
+          <option value="Journal" selected="selected">Journal</option>
+          [% ELSE %]
+          <option value="Journal">Journal</option>
+          [% END %]
+          [% IF whole.value.other.type == "Other" %]
+          <option value="Other" selected="selected">Other</option>
+          [% ELSE %]
+          <option value="Other">Other</option>
+          [% END %]
+        </select>
       </li>
     </ol>
   </fieldset>
