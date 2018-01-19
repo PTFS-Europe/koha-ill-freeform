@@ -448,9 +448,12 @@ sub _prepare_custom {
     # Take an arrayref of custom keys and an arrayref
     # of custom values, return a hashref of them
     my ($keys, $values) = @_;
-    my @k = split("\0", $keys);
-    my @v = split("\0", $values);
-    my %out = map { $k[$_] => $v[$_] } 0 .. $#k;
+    my %out = ();
+    if ( $keys ) {
+        my @k = split("\0", $keys);
+        my @v = split("\0", $values);
+        %out = map { $k[$_] => $v[$_] } 0 .. $#k;
+    }
     return \%out;
 }
 
