@@ -78,6 +78,25 @@ sub name {
     return "FreeForm";
 }
 
+=head3 capabilities
+
+    $capability = $backend->capabilities($name);
+
+Return the sub implementing a capability selected by NAME, or 0 if that
+capability is not implemented.
+
+=cut
+
+sub capabilities {
+    my ( $self, $name ) = @_;
+    my ( $query ) = @_;
+    my $capabilities = {
+        # Set the requested partner email address(es)
+        set_requested_partners => sub { _set_requested_partners(@_); }
+    };
+    return $capabilities->{$name};
+}
+
 =head3 metadata
 
 Return a hashref containing canonical values from the key/value
@@ -396,6 +415,29 @@ sub cancel {
 }
 
 ## Helpers
+
+=head3 _set_requested_partners
+
+=cut
+
+sub _set_requested_partners {
+    # Take a request and set an Illrequestattribute on it
+    # detailing the email address(es) of the requested
+    # partner(s). We replace any existing value since, by
+    # the time we get to this stage, any previous request
+    # from partners would have had to be cancelled
+    my ($args) = @_;
+    my $where = {
+        illrequest_id => $args->{request}->id,
+        type          => 'requested_partners'
+    };
+    Koha::Illrequestattributes->search($where)->delete();
+    Koha::Illrequestattribute->new({
+        illrequest_id => $args->{request}->id,
+        type          => 'requested_partners',
+        value         => $args->{to}
+    })->store;
+}
 
 =head3 _validate_borrower
 
