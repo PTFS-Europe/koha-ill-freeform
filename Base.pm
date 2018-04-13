@@ -91,6 +91,8 @@ sub capabilities {
     my ( $self, $name ) = @_;
     my ( $query ) = @_;
     my $capabilities = {
+        # Get the requested partner email address(es)
+        get_requested_partners => sub { _get_requested_partners(@_); },
         # Set the requested partner email address(es)
         set_requested_partners => sub { _set_requested_partners(@_); }
     };
@@ -100,7 +102,8 @@ sub capabilities {
 =head3 metadata
 
 Return a hashref containing canonical values from the key/value
-illrequestattributes store.
+illrequestattributes store. We may want to ignore certain values
+that we do not consider to be metadata
 
 =cut
 
@@ -108,6 +111,9 @@ sub metadata {
     my ( $self, $request ) = @_;
     my $attrs = $request->illrequestattributes;
     my $metadata = {};
+    my @ignore = (
+        'requested_partners'
+    );
     my $core_fields = {
         type           => 'Type',
         title          => 'Title',
@@ -122,9 +128,12 @@ sub metadata {
         article_pages  => 'Part Pages',
     };
     while ( my $attr = $attrs->next ) {
-        my $name;
-        $name = $core_fields->{$attr->type} || ucfirst($attr->type);
-        $metadata->{$name} = $attr->value;
+        my $type = $attr->type;
+        if (!grep{$_ eq $type} @ignore) {
+            my $name;
+            $name = $core_fields->{$type} || ucfirst($type);
+            $metadata->{$name} = $attr->value;
+        }
     }
     return $metadata;
 }
@@ -415,6 +424,22 @@ sub cancel {
 }
 
 ## Helpers
+
+=head3 _get_requested_partners
+
+=cut
+
+sub _get_requested_partners {
+    # Take a request and retrieve an Illrequestattribute with
+    # the type 'requested_partners'.
+    my ($args) = @_;
+    my $where = {
+        illrequest_id => $args->{request}->id,
+        type          => 'requested_partners'
+    };
+    my $res = Koha::Illrequestattributes->find($where);
+    return ($res) ? $res->value : undef
+}
 
 =head3 _set_requested_partners
 
