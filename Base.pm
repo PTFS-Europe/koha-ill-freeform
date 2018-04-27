@@ -1,6 +1,6 @@
 package Koha::Illbackends::FreeForm::Base;
 
-# Copyright PTFS Europe 2014
+# Copyright PTFS Europe 2014, 2018
 #
 # This file is part of Koha.
 #
@@ -19,6 +19,7 @@ package Koha::Illbackends::FreeForm::Base;
 
 use Modern::Perl;
 use DateTime;
+use Koha::Illrequests;
 use Koha::Illrequestattribute;
 
 =head1 NAME
@@ -61,8 +62,9 @@ well as the option to enter additional fields with arbitrary names & values.
 =cut
 
 sub new {
+
     # -> instantiate the backend
-    my ( $class ) = @_;
+    my ($class) = @_;
     my $self = {};
     bless( $self, $class );
     return $self;
@@ -89,10 +91,12 @@ capability is not implemented.
 
 sub capabilities {
     my ( $self, $name ) = @_;
-    my ( $query ) = @_;
+    my ($query) = @_;
     my $capabilities = {
+
         # Get the requested partner email address(es)
         get_requested_partners => sub { _get_requested_partners(@_); },
+
         # Set the requested partner email address(es)
         set_requested_partners => sub { _set_requested_partners(@_); }
     };
@@ -109,11 +113,9 @@ that we do not consider to be metadata
 
 sub metadata {
     my ( $self, $request ) = @_;
-    my $attrs = $request->illrequestattributes;
-    my $metadata = {};
-    my @ignore = (
-        'requested_partners'
-    );
+    my $attrs       = $request->illrequestattributes;
+    my $metadata    = {};
+    my @ignore      = ('requested_partners');
     my $core_fields = {
         type           => 'Type',
         title          => 'Title',
@@ -129,7 +131,7 @@ sub metadata {
     };
     while ( my $attr = $attrs->next ) {
         my $type = $attr->type;
-        if (!grep{$_ eq $type} @ignore) {
+        if ( !grep { $_ eq $type } @ignore ) {
             my $name;
             $name = $core_fields->{$type} || ucfirst($type);
             $metadata->{$name} = $attr->value;
@@ -145,7 +147,18 @@ This backend provides no additional actions on top of the core_status_graph.
 =cut
 
 sub status_graph {
-    return {};
+    return {
+        MIG => {
+            prev_actions =>
+              [ 'NEW', 'REQ', 'GENREQ', 'REQREV', 'QUEUED', 'CANCREQ', ],
+            id             => 'MIG',
+            name           => 'Backend Migration',
+            ui_method_name => 'Switch provider',
+            method         => 'migrate',
+            next_actions   => [],
+            ui_method_icon => 'fa-search',
+        },
+    };
 }
 
 =head3 create
@@ -162,6 +175,7 @@ sub create {
     my $other = $params->{other};
     my $stage = $other->{stage};
     if ( !$stage || $stage eq 'init' ) {
+
         # We simply need our template .INC to produce a form.
         return {
             error   => 0,
@@ -171,36 +185,17 @@ sub create {
             stage   => 'form',
             value   => $params,
         };
-    } elsif ( $stage eq 'form' ) {
+    }
+    elsif ( $stage eq 'form' ) {
+
         # We may be recieving a submitted form due to an additional
         # custom field being added or deleted, so check for that
-        if (defined $other->{'add_new_custom'}) {
-            my ($custom_keys, $custom_vals) = _get_custom(
-                $other->{'custom_key'},
-                $other->{'custom_value'}
-            );
+        if ( defined $other->{'add_new_custom'} ) {
+            my ( $custom_keys, $custom_vals ) =
+              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
             push @{$custom_keys}, '---';
             push @{$custom_vals}, '---';
-            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
-            my $result = {
-                status  => "",
-                message => "",
-                error   => 0,
-                value   => $params,
-                method  => "create",
-                stage   => "form",
-            };
-            return $result;
-        } elsif (defined $other->{'custom_delete'}) {
-            my $delete_idx = $other->{'custom_delete'};
-            my ($custom_keys, $custom_vals) = _get_custom(
-                $other->{'custom_key'},
-                $other->{'custom_value'}
-            );
-            splice @{$custom_keys}, $delete_idx, 1;
-            splice @{$custom_vals}, $delete_idx, 1;
-            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
             $other->{'custom_value_del'} = join "\t", @{$custom_vals};
             my $result = {
                 status  => "",
@@ -212,10 +207,29 @@ sub create {
             };
             return $result;
         }
-    	# Received completed details of form.  Validate and create request.
+        elsif ( defined $other->{'custom_delete'} ) {
+            my $delete_idx = $other->{'custom_delete'};
+            my ( $custom_keys, $custom_vals ) =
+              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            splice @{$custom_keys}, $delete_idx, 1;
+            splice @{$custom_vals}, $delete_idx, 1;
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            my $result = {
+                status  => "",
+                message => "",
+                error   => 0,
+                value   => $params,
+                method  => "create",
+                stage   => "form",
+            };
+            return $result;
+        }
+
+        # Received completed details of form.  Validate and create request.
         ## Validate
-        my ( $brw_count, $brw )
-            = _validate_borrower($other->{'cardnumber'});
+        my ( $brw_count, $brw ) =
+          _validate_borrower( $other->{'cardnumber'} );
         my $result = {
             status  => "",
             message => "",
@@ -227,38 +241,42 @@ sub create {
         my $failed = 0;
         if ( !$other->{'title'} ) {
             $result->{status} = "missing_title";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( !$other->{'type'} ) {
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( !$other->{'type'} ) {
             $result->{status} = "missing_type";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( !$other->{'branchcode'} ) {
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( !$other->{'branchcode'} ) {
             $result->{status} = "missing_branch";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( !Koha::Libraries->find($other->{'branchcode'}) ) {
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( !Koha::Libraries->find( $other->{'branchcode'} ) ) {
             $result->{status} = "invalid_branch";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( $brw_count == 0 ) {
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( $brw_count == 0 ) {
             $result->{status} = "invalid_borrower";
-            $result->{value} = $params;
-            $failed = 1;
-        } elsif ( $brw_count > 1 ) {
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( $brw_count > 1 ) {
+
             # We must select a specific borrower out of our options.
-            $params->{brw} = $brw;
+            $params->{brw}   = $brw;
             $result->{value} = $params;
             $result->{stage} = "borrowers";
             $result->{error} = 0;
-            $failed = 1;
-        };
+            $failed          = 1;
+        }
         if ($failed) {
-            my ($custom_keys, $custom_vals) = _get_custom(
-                $other->{'custom_key'},
-                $other->{'custom_value'}
-            );
-            $other->{'custom_key_del'} = join "\t", @{$custom_keys};
+            my ( $custom_keys, $custom_vals ) =
+              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
             $other->{'custom_value_del'} = join "\t", @{$custom_vals};
             return $result;
         }
@@ -267,19 +285,19 @@ sub create {
 
         # Get custom key / values we've been passed
         # Prepare them for addition into the Illrequestattribute object
-        my $custom = _prepare_custom(
-            $other->{'custom_key'},
-            $other->{'custom_value'}
-        );
+        my $custom =
+          _prepare_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+
         # ...Populate Illrequest
         my $request = $params->{request};
-        $request->borrowernumber($brw->borrowernumber);
-        $request->branchcode($params->{other}->{branchcode});
+        $request->borrowernumber( $brw->borrowernumber );
+        $request->branchcode( $params->{other}->{branchcode} );
         $request->status('NEW');
-        $request->backend($params->{other}->{backend});
-        $request->placed(DateTime->now);
-        $request->updated(DateTime->now);
+        $request->backend( $params->{other}->{backend} );
+        $request->placed( DateTime->now );
+        $request->updated( DateTime->now );
         $request->store;
+
         # ...Populate Illrequestattributes
         # generate $request_details
         # The core fields
@@ -296,15 +314,18 @@ sub create {
             article_title  => $params->{other}->{article_title},
             article_author => $params->{other}->{article_author},
             article_pages  => $params->{other}->{article_pages},
+
             # Include the custom fields
             %$custom
         };
         while ( my ( $type, $value ) = each %{$request_details} ) {
-            Koha::Illrequestattribute->new({
-                illrequest_id => $request->illrequest_id,
-                type          => $type,
-                value         => $value,
-            })->store;
+            Koha::Illrequestattribute->new(
+                {
+                    illrequest_id => $request->illrequest_id,
+                    type          => $type,
+                    value         => $value,
+                }
+            )->store;
         }
 
         ## -> create response.
@@ -317,8 +338,9 @@ sub create {
             next    => 'illview',
             value   => $request_details,
         };
-    } else {
-	# Invalid stage, return error.
+    }
+    else {
+        # Invalid stage, return error.
         return {
             error   => 1,
             status  => 'unknown_stage',
@@ -347,26 +369,30 @@ sub confirm {
     my ( $self, $params ) = @_;
     my $stage = $params->{other}->{stage};
     if ( !$stage || $stage eq 'init' ) {
+
         # We simply need our template .INC to produce a text block.
         return {
-            method  => 'confirm',
-            stage   => 'confirm',
-            value   => $params,
+            method => 'confirm',
+            stage  => 'confirm',
+            value  => $params,
         };
-    } elsif ( $stage eq 'confirm' ) {
+    }
+    elsif ( $stage eq 'confirm' ) {
         my $request = $params->{request};
-        $request->orderid($request->illrequest_id);
+        $request->orderid( $request->illrequest_id );
         $request->status("REQ");
         $request->store;
+
         # ...then return our result:
         return {
-            method   => 'confirm',
-            stage    => 'commit',
-            next     => 'illview',
-            value    => {},
+            method => 'confirm',
+            stage  => 'commit',
+            next   => 'illview',
+            value  => {},
         };
-    } else {
-	# Invalid stage, return error.
+    }
+    else {
+        # Invalid stage, return error.
         return {
             error   => 1,
             status  => 'unknown_stage',
@@ -394,13 +420,15 @@ sub cancel {
     my ( $self, $params ) = @_;
     my $stage = $params->{other}->{stage};
     if ( !$stage || $stage eq 'init' ) {
+
         # We simply need our template .INC to produce a text block.
         return {
-            method  => 'cancel',
-            stage   => 'confirm',
-            value   => $params,
+            method => 'cancel',
+            stage  => 'confirm',
+            value  => $params,
         };
-    } elsif ( $stage eq 'confirm' ) {
+    }
+    elsif ( $stage eq 'confirm' ) {
         $params->{request}->status("REQREV");
         $params->{request}->orderid(undef);
         $params->{request}->store;
@@ -410,8 +438,9 @@ sub cancel {
             next   => 'illview',
             value  => $params,
         };
-    } else {
-	# Invalid stage, return error.
+    }
+    else {
+        # Invalid stage, return error.
         return {
             error   => 1,
             status  => 'unknown_stage',
@@ -423,6 +452,84 @@ sub cancel {
     }
 }
 
+=head3 migrate
+
+Migrate a request into or out of this backend.
+
+=cut
+
+sub migrate {
+    my ( $self, $params ) = @_;
+    my $other = $params->{other};
+
+    my $stage = $other->{stage};
+    my $step  = $other->{step};
+
+    # Recieve a new request from another backend and suppliment it with
+    # anything we require specifically for this backend.
+    if ( !$stage || $stage eq 'immigrate' ) {
+        my $original_request =
+          Koha::Illrequests->find( $other->{illrequest_id} );
+        my $new_request = $params->{request};
+        $new_request->borrowernumber( $original_request->borrowernumber );
+        $new_request->branchcode( $original_request->branchcode );
+        $new_request->status('NEW');
+        $new_request->backend( $self->name );
+        $new_request->placed( DateTime->now );
+        $new_request->updated( DateTime->now );
+        $new_request->store;
+
+        my @default_attributes = (
+            qw/title type author year volume isbn issn article_title article_author aritlce_pages/
+        );
+        my $original_attributes =
+          $original_request->illrequestattributes->search(
+            { type => { '-in' => \@default_attributes } } );
+
+        my $request_details =
+          { map { $_->type => $_->value } ( $original_attributes->as_list ) };
+        $request_details->{migrated_from} = $original_request->illrequest_id;
+        while ( my ( $type, $value ) = each %{$request_details} ) {
+            Koha::Illrequestattribute->new(
+                {
+                    illrequest_id => $new_request->illrequest_id,
+                    type          => $type,
+                    value         => $value,
+                }
+            )->store;
+        }
+
+        return {
+            error   => 0,
+            status  => '',
+            message => '',
+            method  => 'migrate',
+            stage   => 'commit',
+            next    => 'emigrate',
+            value   => $params,
+        };
+    }
+
+    # Cleanup any outstanding work, close the request.
+    elsif ( $stage eq 'emigrate' ) {
+        my $request = $params->{request};
+
+        # Just cancel the original request now it's been migrated away
+        $request->status("REQREV");
+        $request->orderid(undef);
+        $request->store;
+
+        return {
+            error   => 0,
+            status  => '',
+            message => '',
+            method  => 'migrate',
+            stage   => 'commit',
+            value   => $params,
+        };
+    }
+}
+
 ## Helpers
 
 =head3 _get_requested_partners
@@ -430,6 +537,7 @@ sub cancel {
 =cut
 
 sub _get_requested_partners {
+
     # Take a request and retrieve an Illrequestattribute with
     # the type 'requested_partners'.
     my ($args) = @_;
@@ -438,7 +546,7 @@ sub _get_requested_partners {
         type          => 'requested_partners'
     };
     my $res = Koha::Illrequestattributes->find($where);
-    return ($res) ? $res->value : undef
+    return ($res) ? $res->value : undef;
 }
 
 =head3 _set_requested_partners
@@ -446,6 +554,7 @@ sub _get_requested_partners {
 =cut
 
 sub _set_requested_partners {
+
     # Take a request and set an Illrequestattribute on it
     # detailing the email address(es) of the requested
     # partner(s). We replace any existing value since, by
@@ -457,11 +566,13 @@ sub _set_requested_partners {
         type          => 'requested_partners'
     };
     Koha::Illrequestattributes->search($where)->delete();
-    Koha::Illrequestattribute->new({
-        illrequest_id => $args->{request}->id,
-        type          => 'requested_partners',
-        value         => $args->{to}
-    })->store;
+    Koha::Illrequestattribute->new(
+        {
+            illrequest_id => $args->{request}->id,
+            type          => 'requested_partners',
+            value         => $args->{to}
+        }
+    )->store;
 }
 
 =head3 _validate_borrower
@@ -469,14 +580,15 @@ sub _set_requested_partners {
 =cut
 
 sub _validate_borrower {
+
     # Perform cardnumber search.  If no results, perform surname search.
     # Return ( 0, undef ), ( 1, $brw ) or ( n, $brws )
-    my ( $input ) = @_;
+    my ($input) = @_;
     my $patrons = Koha::Patrons->new;
     my ( $count, $brw );
     my $query = { cardnumber => $input };
 
-    my $brws = $patrons->search( $query );
+    my $brws = $patrons->search($query);
     $count = $brws->count;
     my @criteria = qw/ surname firstname end /;
     while ( $count == 0 ) {
@@ -487,8 +599,9 @@ sub _validate_borrower {
     }
     if ( $count == 1 ) {
         $brw = $brws->next;
-    } else {
-        $brw = $brws;           # found multiple results
+    }
+    else {
+        $brw = $brws;    # found multiple results
     }
     return ( $count, $brw );
 }
@@ -498,13 +611,14 @@ sub _validate_borrower {
 =cut
 
 sub _get_custom {
+
     # Take an string of custom keys and an string
     # of custom values, both delimited by \0 (by CGI)
     # and return an arrayref of each
-    my ($keys, $values) = @_;
-    my @k = defined $keys ? split("\0", $keys) : ();
-    my @v = defined $values ? split("\0", $values) : ();
-    return (\@k, \@v);
+    my ( $keys, $values ) = @_;
+    my @k = defined $keys   ? split( "\0", $keys )   : ();
+    my @v = defined $values ? split( "\0", $values ) : ();
+    return ( \@k, \@v );
 }
 
 =head3 _prepare_custom
@@ -512,21 +626,23 @@ sub _get_custom {
 =cut
 
 sub _prepare_custom {
+
     # Take an arrayref of custom keys and an arrayref
     # of custom values, return a hashref of them
-    my ($keys, $values) = @_;
+    my ( $keys, $values ) = @_;
     my %out = ();
-    if ( $keys ) {
-        my @k = split("\0", $keys);
-        my @v = split("\0", $values);
+    if ($keys) {
+        my @k = split( "\0", $keys );
+        my @v = split( "\0", $values );
         %out = map { $k[$_] => $v[$_] } 0 .. $#k;
     }
     return \%out;
 }
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Alex Sassmannshausen <alex.sassmannshausen@ptfs-europe.com>
+Martin Renvoize <martin.renvoize@ptfs-europe.com>
 
 =cut
 
