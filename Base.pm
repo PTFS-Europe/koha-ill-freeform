@@ -319,13 +319,16 @@ sub create {
             %$custom
         };
         while ( my ( $type, $value ) = each %{$request_details} ) {
-            Koha::Illrequestattribute->new(
-                {
-                    illrequest_id => $request->illrequest_id,
-                    type          => $type,
-                    value         => $value,
-                }
-            )->store;
+            if ($value && length $value > 0) {
+                Koha::Illrequestattribute->new(
+                    {
+                        illrequest_id => $request->illrequest_id,
+                        type          => $type,
+                        value         => $value,
+                        readonly      => 0
+                    }
+                )->store;
+            }
         }
 
         ## -> create response.
