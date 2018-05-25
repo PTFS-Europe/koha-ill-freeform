@@ -1,23 +1,16 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_title' %]
 <p><em>Please Note:</em> Mandatory field Title is missing.</p>
-[% ELSIF whole.status == 'missing_identifier' %]
-<p><em>Please Note:</em> Mandatory field Identifier is missing.</p>
+[% ELSIF whole.status == 'missing_type' %]
+<p><em>Please Note:</em> Mandatory field Type is missing.</p>
 [% ELSIF whole.status == 'missing_author' %]
 <p><em>Please Note:</em> Mandatory field Author is missing.</p>
-[% ELSIF whole.status == 'missing_branch' %]
-<p><em>Please Note:</em> Branch is a mandatory field.</p>
-[% ELSIF whole.status == 'invalid_borrower' %]
-<p><em>Please Note:</em> The borrower details you entered are invalid.</p>
-[% ELSIF whole.status == 'invalid_branch' %]
-<p><em>Please Note:</em> The branch you chose is invalid.</p>
 [% ELSE %]
 <p>Unhandled error</p>
 [% END %]
 [% END %]
 
-[% IF whole.stage == "form" %]
-<h2>Create a manual ILL request</h2>
+<h2>Edit a manual ILL request</h2>
 <form method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>General details</legend>
@@ -53,8 +46,9 @@
   <fieldset class="rows">
     <legend>Publication details</legend>
     <input name="stage" id="stage" value="form" type="hidden"/>
-    <input name="method" id="method" value="create" type="hidden"/>
+    <input name="method" id="method" value="edititem" type="hidden"/>
     <input name="backend" id="method" value="FreeForm" type="hidden"/>
+    <input name="illrequest_id" id="illrequest_id" value="[% whole.value.request.id %]" type="hidden"/>
     <ol id="publication-freeform-fields">
       <li>
         <label class="required" for="title">Publication Title:</label>
@@ -124,31 +118,8 @@
       Add new field
     </button> 
   </fieldset>
-  <fieldset class="rows">
-    <legend>Borrower options</legend>
-    <ol>
-      <li>
-        <label class="required" for="cardnumber">
-          Card number or surname:
-        </label>
-        <input type="text" name="cardnumber" id="cardnumber"
-               type="text" value="" />
-      </li>
-      <li>
-        <label class="required" for="branchcode">Destination branch:</label>
-        <select id="branchcode" name="branchcode">
-          <option value="" />
-          [% FOREACH branch IN branches %]
-            <option value="[% branch.branchcode %]">
-              [% branch.branchname %]
-            </option>
-          [% END %]
-        </select>
-      </li>
-    </ol>
-  </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Create"/>
+    <input type="submit" value="Update"/>
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
   </fieldset>
 </form>
@@ -176,64 +147,4 @@
         });
     // ]]>
 </script>
-[% END %]
-
-[% ELSIF whole.stage == "borrowers" %]
-<!-- We need to clarify the borrower that has been requested. -->
-<h2>Borrower selection</h2>
-<form method="POST" action=[% here %]>
-  <fieldset class="rows">
-    <legend>Available borrowers for surname [% surname %]</legend>
-    <input name="stage" id="stage" value="form" type="hidden"/>
-    <input name="method" id="method" value="create" type="hidden"/>
-    <input name="backend" id="backend" value="[% whole.value.other.backend %]" type="hidden"/>
-    <input name="branchcode" id="branchcode" value="[% whole.value.other.branchcode %]" type="hidden"/>
-    <input name="isbn" id="isbn" value="[% whole.value.other.isbn %]" type="hidden"/>
-    <input name="issn" id="issn" value="[% whole.value.other.issn %]" type="hidden"/>
-    <input name="title" id="title" value="[% whole.value.other.title %]" type="hidden"/>
-    <input name="author" id="author" value="[% whole.value.other.author %]" type="hidden"/>
-    <input name="year" id="year" value="[% whole.value.other.year %]" type="hidden"/>
-    <input name="volume" id="volume" value="[% whole.value.other.volume %]" type="hidden"/>
-    <input name="part_edition" id="part_edition" value="[% whole.value.other.part_edition %]" type="hidden"/>
-    <input name="type" id="type" value="[% whole.value.other.type %]" type="hidden"/>
-    <input name="article_title" id="article_title" value="[% whole.value.other.article_title %]" type="hidden"/>
-    <input name="article_author" id="article_author" value="[% whole.value.other.article_author %]" type="hidden"/>
-    <input name="article_pages" id="article_pages" value="[% whole.value.other.article_pages %]" type="hidden"/>
-    [% custom_keys = whole.value.other.custom_key_del.split('\t') %]
-    [% custom_values = whole.value.other.custom_value_del.split('\t') %]
-    [% i = 0 %]
-    [% FOR key IN custom_keys %]
-    <input type="hidden" name="custom_key" id="custom_key" value="[% key %]">
-    <input type="hidden" name="custom_value" id="custom_value" value="[% custom_values.$i %]">
-    [% i = i + 1 %]
-    [% END %]
-    [% FOREACH opt IN whole.value %]
-    [% IF opt.key == "brw" %]
-    <ol>
-      <li>
-        <label class="required" for="brw">Borrower</label>
-        <select name="cardnumber" id="cardnumber">
-          <option value=""></option>
-          [% FOREACH brw IN opt.value %]
-          <option value="[% brw.cardnumber %]">
-            [% brw.firstname %] [% brw.surname %] ([% brw.cardnumber %])
-          </option>
-          [% END %]
-        </select>
-      </li>
-    </ol>
-    [% ELSE %]
-    <input name="[% opt.key %]" id="[% opt.key %]" value="[% opt.value %]" type="hidden"/>
-    [% END %]
-    [% END %]
-  </fieldset>
-  <fieldset class="action">
-    <input type="submit" value="Select"/>
-    <a class="cancel" href=[% parent %]>Cancel</a>
-  </fieldset>
-</form>
-
-[% ELSE %]
-<p>Unknown stage.  This should not have happened.
-
 [% END %]
