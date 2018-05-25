@@ -160,7 +160,7 @@
                 e.preventDefault();
                 var row = '<li class="form-horizontal">' +
                     '<input type="text" class="custom-name" name="custom_key">' +
-                    '<input type="text" name="custom_value" id="custom-value"> '+
+                    '<input type="text" id="custom-value" name="custom_value"> '+
                     '<button type="button" class="btn btn-danger btn-sm ' +
                     'delete-new-field">' +
                     '<span class="fa fa-delete">' +
