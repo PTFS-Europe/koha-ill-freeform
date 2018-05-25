@@ -116,19 +116,7 @@ sub metadata {
     my $attrs       = $request->illrequestattributes;
     my $metadata    = {};
     my @ignore      = ('requested_partners');
-    my $core_fields = {
-        type           => 'Type',
-        title          => 'Title',
-        author         => 'Author',
-        isbn           => 'ISBN',
-        issn           => 'ISSN',
-        part_edition   => 'Part / Edition',
-        volume         => 'Volume',
-        year           => 'Year',
-        article_title  => 'Part Title',
-        article_author => 'Part Author',
-        article_pages  => 'Part Pages',
-    };
+	my $core_fields = _get_core_fields();
     while ( my $attr = $attrs->next ) {
         my $type = $attr->type;
         if ( !grep { $_ eq $type } @ignore ) {
@@ -158,6 +146,16 @@ sub status_graph {
             next_actions   => [],
             ui_method_icon => 'fa-search',
         },
+        EDITITEM => {
+            prev_actions   => [ 'NEW' ],
+            id             => 'EDITITEM',
+            name           => 'Edited item metadata',
+            ui_method_name => 'Edit item metadata',
+            method         => 'edititem',
+            next_actions   => [],
+            ui_method_icon => 'fa-edit',
+        },
+
     };
 }
 
@@ -283,11 +281,6 @@ sub create {
 
         ## Create request
 
-        # Get custom key / values we've been passed
-        # Prepare them for addition into the Illrequestattribute object
-        my $custom =
-          _prepare_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-
         # ...Populate Illrequest
         my $request = $params->{request};
         $request->borrowernumber( $brw->borrowernumber );
@@ -300,24 +293,7 @@ sub create {
 
         # ...Populate Illrequestattributes
         # generate $request_details
-        # The core fields
-        # + each additional field added by user
-        my $request_details = {
-            title          => $params->{other}->{title},
-            type           => $params->{other}->{type},
-            author         => $params->{other}->{author},
-            year           => $params->{other}->{year},
-            volume         => $params->{other}->{volume},
-            part_edition   => $params->{other}->{part_edition},
-            isbn           => $params->{other}->{isbn},
-            issn           => $params->{other}->{issn},
-            article_title  => $params->{other}->{article_title},
-            article_author => $params->{other}->{article_author},
-            article_pages  => $params->{other}->{article_pages},
-
-            # Include the custom fields
-            %$custom
-        };
+        my $request_details = _get_request_details($params, $other);
         while ( my ( $type, $value ) = each %{$request_details} ) {
             if ($value && length $value > 0) {
                 Koha::Illrequestattribute->new(
@@ -354,6 +330,140 @@ sub create {
         };
     }
 }
+
+=head3 edititem
+
+=cut
+
+sub edititem {
+    my ( $self, $params ) = @_;
+    my $other = $params->{other};
+    my $stage = $other->{stage};
+    if ( !$stage || $stage eq 'init' ) {
+
+		my $attrs = $params->{request}->illrequestattributes->unblessed;
+		my $core = _get_core_fields();
+		# We need to identify which parameters are custom, and pass them
+		# to the template in a predefined form
+		my $custom_keys = [];
+		my $custom_vals = [];
+		foreach my $attr(@{$attrs}) {
+			if (!$core->{$attr->{type}}) {
+				push @{$custom_keys}, $attr->{type};
+				push @{$custom_vals}, $attr->{value};
+			} else {
+				$other->{$attr->{type}} = $attr->{value};
+			}
+		}
+		$other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+		$other->{'custom_value_del'} = join "\t", @{$custom_vals};
+        # Pass everything back to the template
+        return {
+            error   => 0,
+            status  => '',
+            message => '',
+            method  => 'edititem',
+            stage   => 'form',
+            value   => $params,
+        };
+    }
+    elsif ( $stage eq 'form' ) {
+		# We don't want the request ID param getting any further
+		delete $other->{illrequest_id};
+
+		my $result = {
+			status  => "",
+			message => "",
+			error   => 1,
+			value   => {},
+			method  => "edititem",
+			stage   => "form",
+		};
+        # Received completed details of form.  Validate and create request.
+        ## Validate
+        my $failed = 0;
+        if ( !$other->{'title'} ) {
+            $result->{status} = "missing_title";
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        elsif ( !$other->{'type'} ) {
+            $result->{status} = "missing_type";
+            $result->{value}  = $params;
+            $failed           = 1;
+		}
+        elsif ( !$other->{'author'} ) {
+            $result->{status} = "missing_author";
+            $result->{value}  = $params;
+            $failed           = 1;
+        }
+        if ($failed) {
+            my ( $custom_keys, $custom_vals ) =
+              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            return $result;
+        }
+
+        ## Update request
+
+        # ...Update Illrequest
+        my $request = $params->{request};
+        $request->updated( DateTime->now );
+        $request->store;
+
+        # ...Populate Illrequestattributes
+        # generate $request_details
+        my $request_details = _get_request_details($params, $other);
+        # We do this with a 'dump all and repopulate approach' inside
+        # a transaction, easier than catering for create, update & delete
+        my $dbh    = C4::Context->dbh;
+        my $schema = Koha::Database->new->schema;
+        $schema->txn_do(
+            sub{
+                # Delete all existing attributes for this request
+                $dbh->do( q|
+                    DELETE FROM illrequestattributes WHERE illrequest_id=?
+                |, undef, $request->id);
+                # Insert all current attributes for this request
+                foreach my $attr(%{$request_details}) {
+                    my $value = $request_details->{$attr};
+                    if ($value && length $value > 0){
+                        my @bind = ($request->id, $attr, $value, 0);
+                        $dbh->do ( q|
+                            INSERT INTO illrequestattributes
+                            (illrequest_id, type, value, readonly) VALUES
+                            (?, ?, ?, ?)
+                        |, undef, @bind);
+                    }
+                }
+            }
+        );
+
+        ## -> create response.
+        return {
+            error   => 0,
+            status  => '',
+            message => '',
+            method  => 'create',
+            stage   => 'commit',
+            next    => 'illview',
+            value   => $request_details,
+        };
+    }
+    else {
+        # Invalid stage, return error.
+        return {
+            error   => 1,
+            status  => 'unknown_stage',
+            message => '',
+            method  => 'create',
+            stage   => $params->{stage},
+            value   => {},
+        };
+    }
+}
+
 
 =head3 confirm
 
@@ -642,10 +752,60 @@ sub _prepare_custom {
     return \%out;
 }
 
+=head3 _get_request_details
+
+    my $request_details = _get_request_details($params, $other);
+
+Return the illrequestattributes for a given request
+
+=cut
+
+sub _get_request_details {
+    my ($params, $other) = @_;
+
+    # Get custom key / values we've been passed
+    # Prepare them for addition into the Illrequestattribute object
+    my $custom =
+        _prepare_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+
+    my $return = {
+        %$custom
+    };
+    my $core = _get_core_fields();
+    foreach my $key(%{$core}) {
+        $return->{$key} = $params->{other}->{$key};
+    }
+
+    return $return;
+}
+
+=head3 _get_core_fields
+
+Return a hashref of core fields
+
+=cut
+
+sub _get_core_fields {
+    return {
+        type           => 'Type',
+        title          => 'Title',
+        author         => 'Author',
+        isbn           => 'ISBN',
+        issn           => 'ISSN',
+        part_edition   => 'Part / Edition',
+        volume         => 'Volume',
+        year           => 'Year',
+        article_title  => 'Part Title',
+        article_author => 'Part Author',
+        article_pages  => 'Part Pages',
+    };
+}
+
 =head1 AUTHORS
 
 Alex Sassmannshausen <alex.sassmannshausen@ptfs-europe.com>
 Martin Renvoize <martin.renvoize@ptfs-europe.com>
+Andrew Isherwood <andrew.isherwood@ptfs-europe.com>
 
 =cut
 
