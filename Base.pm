@@ -339,7 +339,7 @@ sub edititem {
     my ( $self, $params ) = @_;
 
     # Don't allow editing of submitted requests
-    $response->{method} = 'illlist' if $params->{request}->status ne 'NEW';
+    return { method => 'illlist' } if $params->{request}->status ne 'NEW';
 
     my $other = $params->{other};
     my $stage = $other->{stage};
