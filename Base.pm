@@ -707,7 +707,7 @@ sub _validate_borrower {
 
     my $brws = $patrons->search($query);
     $count = $brws->count;
-    my @criteria = qw/ surname firstname end /;
+    my @criteria = qw/ surname userid firstname end /;
     while ( $count == 0 ) {
         my $criterium = shift @criteria;
         return ( 0, undef ) if ( "end" eq $criterium );
