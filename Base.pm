@@ -19,6 +19,8 @@ package Koha::Illbackends::FreeForm::Base;
 
 use Modern::Perl;
 use DateTime;
+use CGI;
+
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
 
@@ -98,7 +100,10 @@ sub capabilities {
         get_requested_partners => sub { _get_requested_partners(@_); },
 
         # Set the requested partner email address(es)
-        set_requested_partners => sub { _set_requested_partners(@_); }
+        set_requested_partners => sub { _set_requested_partners(@_); },
+
+        # Perform generic_confirm
+        generic_confirm => sub { generic_confirm(@_); }
     };
     return $capabilities->{$name};
 }
@@ -154,6 +159,15 @@ sub status_graph {
             method         => 'edititem',
             next_actions   => [],
             ui_method_icon => 'fa-edit',
+        },
+        GENREQ => {
+            prev_actions   => [ 'NEW', 'REQREV' ],
+            id             => 'GENREQ',
+            name           => 'Requested from partners',
+            ui_method_name => 'Place request with partners',
+            method         => 'generic_confirm',
+            next_actions   => [ 'COMP' ],
+            ui_method_icon => 'fa-send-o',
         },
 
     };
@@ -647,7 +661,170 @@ sub migrate {
     }
 }
 
+=head3 generic_confirm
+
+Prepare the sending of an email to partners
+
+=cut
+
+sub generic_confirm {
+	my ($self, $params) = @_;
+
+	try {
+		my $request = Koha::Illrequests->find($params->{illrequest_id});
+        my $template = $params->{template};
+		$params->{current_branchcode} = C4::Context->mybranch;
+        $params->{request} = $request;
+		my $backend_result = _send_partners_email($params);
+		$template->param(
+			whole => $backend_result,
+			request => $request,
+		);
+		$template->param( error => $params->{error} )
+			if $params->{error};
+
+		# handle special commit rules & update type
+		handle_commit_maybe($backend_result, $request);
+	}
+	catch {
+		my $error;
+		if ( $_->isa( 'Koha::Exceptions::Ill::NoTargetEmail' ) ) {
+			$error = 'no_target_email';
+		}
+		elsif ( $_->isa( 'Koha::Exceptions::Ill::NoLibraryEmail' ) ) {
+			$error = 'no_library_email';
+		}
+		else {
+			$error = 'unknown_error';
+		}
+        my $cgi = CGI->new;
+		print $cgi->redirect(
+			"/cgi-bin/koha/ill/ill-requests.pl?" .
+			"method=generic_confirm&illrequest_id=" .
+			$params->{illrequest_id} .
+			"&error=$error" );
+		exit;
+	};
+}
+
 ## Helpers
+
+=head3 _send_partners_email
+
+    my $result = _send_partners_email($params);
+
+The first stage involves creating a template email for the end user to
+edit in the browser.  The second stage attempts to submit the email.
+
+=cut
+
+sub _send_partners_email {
+    my ( $params ) = @_;
+    my $branch = Koha::Libraries->find($params->{current_branchcode})
+        || die "Invalid current branchcode. Are you logged in as the database user?";
+    if ( !$params->{stage}|| $params->{stage} eq 'init' ) {
+        my $draft->{subject} = "ILL Request";
+        $draft->{body} = <<EOF;
+Dear Sir/Madam,
+
+    We would like to request an interlibrary loan for a title matching the
+following description:
+
+EOF
+
+        my $details = $params->{request}->metadata;
+        while (my ($title, $value) = each %{$details}) {
+            $draft->{body} .= "  - " . $title . ": " . $value . "\n"
+                if $value;
+        }
+        $draft->{body} .= <<EOF;
+
+Please let us know if you are able to supply this to us.
+
+Kind Regards
+
+EOF
+
+        my @address = map { $branch->$_ }
+            qw/ branchname branchaddress1 branchaddress2 branchaddress3
+                branchzip branchcity branchstate branchcountry branchphone
+                branchemail /;
+        my $address = "";
+        foreach my $line ( @address ) {
+            $address .= $line . "\n" if $line;
+        }
+
+        $draft->{body} .= $address;
+
+        my $partners = Koha::Patrons->search({
+            categorycode => $params->{request}->_config->partner_code
+        });
+        return {
+            error   => 0,
+            status  => '',
+            message => '',
+            method  => 'generic_confirm',
+            stage   => 'draft',
+            value   => {
+                draft    => $draft,
+                partners => $partners,
+            }
+        };
+
+    } elsif ( 'draft' eq $params->{stage} ) {
+        # Create the to header
+        my $to = $params->{partners};
+        if ( defined $to ) {
+            $to =~ s/^\x00//;       # Strip leading NULLs
+            $to =~ s/\x00/; /;      # Replace others with '; '
+        }
+        Koha::Exceptions::Ill::NoTargetEmail->throw(
+            "No target email addresses found. Either select at least one partner or check your ILL partner library records.")
+          if ( !$to );
+        # Create the from, replyto and sender headers
+        my $from = $branch->branchemail;
+        my $replyto = $branch->branchreplyto || $from;
+        Koha::Exceptions::Ill::NoLibraryEmail->throw(
+            "Your library has no usable email address. Please set it.")
+          if ( !$from );
+
+        # Create the email
+        my $message = Koha::Email->new;
+        my %mail = $message->create_message_headers(
+            {
+                to          => $to,
+                from        => $from,
+                replyto     => $replyto,
+                subject     => Encode::encode( "utf8", $params->{subject} ),
+                message     => Encode::encode( "utf8", $params->{body} ),
+                contenttype => 'text/plain',
+            }
+        );
+        # Send it
+        my $result = sendmail(%mail);
+        if ( $result ) {
+            $params->{request}->status("GENREQ")->store;
+            return {
+                error   => 0,
+                status  => '',
+                message => '',
+                method  => 'generic_confirm',
+                stage   => 'commit',
+                next    => 'illview',
+            };
+        } else {
+            return {
+                error   => 1,
+                status  => 'email_failed',
+                message => $Mail::Sendmail::error,
+                method  => 'generic_confirm',
+                stage   => 'draft',
+            };
+        }
+    } else {
+        die "Unknown stage, should not have happened."
+    }
+}
 
 =head3 _get_requested_partners
 
