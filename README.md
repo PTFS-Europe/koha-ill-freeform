@@ -1,6 +1,6 @@
 # Koha Interlibrary Loans FreeForm backend
 
-This backend provides a open and flexible method to create Interlibrary Loan requests that are not tied to a specific service.
+This backend provides an open and flexible method to create Interlibrary Loan requests that are not tied to a specific service.
 
 ## Getting Started
 
