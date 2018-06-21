@@ -12,6 +12,6 @@ The version of the backend you require depends on the version of Koha you are us
 ## Installing
 
 * Create a directory in `Koha` called `Illbackends`, so you will end up with `Koha/Illbackends`
-* Clone the repository into this directory, so you will end up with `Koha/Illbackends/FreeForm`
-* In the `FreeForm` directory switch to the branch you wish to use
+* Clone the repository into this directory, so you will end up with `Koha/Illbackends/koha-ill-freeform`
+* In the `koha-ill-freeform` directory switch to the branch you wish to use
 * Activate ILL by enabling the `ILLModule` system preference
