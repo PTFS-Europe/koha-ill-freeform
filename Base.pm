@@ -294,6 +294,22 @@ sub create {
         # ...Populate Illrequestattributes
         # generate $request_details
         my $request_details = _get_request_details($params, $other);
+
+        # Create additional metadata properties that conform
+        # to our common schema
+        $request_details->{type} = lc($params->{other}->{type});
+        $request_details->{author} = $params->{other}->{author};
+        if ($request_details->{type} eq 'article') {
+            $request_details->{container_title} = $params->{other}->{title}
+                if $params->{other}->{title};
+            $request_details->{title} = $params->{other}->{article_title}
+                if $params->{other}->{article_title};
+            $request_details->{pages} = $params->{other}->{article_pages}
+                if $params->{other}->{article_pages};
+            $request_details->{author} = $params->{other}->{article_author}
+                if $params->{other}->{article_author};
+        }
+
         while ( my ( $type, $value ) = each %{$request_details} ) {
             if ($value && length $value > 0) {
                 Koha::Illrequestattribute->new(
@@ -791,17 +807,18 @@ Return a hashref of core fields
 
 sub _get_core_fields {
     return {
-        type           => 'Type',
-        title          => 'Title',
-        author         => 'Author',
-        isbn           => 'ISBN',
-        issn           => 'ISSN',
-        part_edition   => 'Part / Edition',
-        volume         => 'Volume',
-        year           => 'Year',
-        article_title  => 'Part Title',
-        article_author => 'Part Author',
-        article_pages  => 'Part Pages',
+        type            => 'Type',
+        title           => 'Title',
+        container_title => 'Container Title',
+        author          => 'Author',
+        isbn            => 'ISBN',
+        issn            => 'ISSN',
+        part_edition    => 'Part / Edition',
+        volume          => 'Volume',
+        year            => 'Year',
+        article_title   => 'Part Title',
+        article_author  => 'Part Author',
+        article_pages   => 'Part Pages',
     };
 }
 
