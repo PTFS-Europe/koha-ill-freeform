@@ -613,7 +613,7 @@ sub migrate {
         $new_request->store;
 
         my @default_attributes = (
-            qw/title type author year volume isbn issn article_title article_author aritlce_pages/
+            qw/title type author year volume isbn issn article_title article_author article_pages/
         );
         my $original_attributes =
           $original_request->illrequestattributes->search(
