@@ -115,17 +115,18 @@ sub metadata {
         'requested_partners'
     );
     my $core_fields = {
-        type           => 'Type',
-        title          => 'Title',
-        author         => 'Author',
-        isbn           => 'ISBN',
-        issn           => 'ISSN',
-        part_edition   => 'Part / Edition',
-        volume         => 'Volume',
-        year           => 'Year',
-        article_title  => 'Part Title',
-        article_author => 'Part Author',
-        article_pages  => 'Part Pages',
+        type            => 'Type',
+        title           => 'Title',
+        container_title => 'Container Title',
+        author          => 'Author',
+        isbn            => 'ISBN',
+        issn            => 'ISSN',
+        part_edition    => 'Part / Edition',
+        volume          => 'Volume',
+        year            => 'Year',
+        article_title   => 'Part Title',
+        article_author  => 'Part Author',
+        article_pages   => 'Part Pages',
     };
     while ( my $attr = $attrs->next ) {
         my $type = $attr->type;
@@ -285,20 +286,31 @@ sub create {
         # The core fields
         # + each additional field added by user
         my $request_details = {
-            title          => $params->{other}->{title},
-            type           => $params->{other}->{type},
-            author         => $params->{other}->{author},
-            year           => $params->{other}->{year},
-            volume         => $params->{other}->{volume},
-            part_edition   => $params->{other}->{part_edition},
-            isbn           => $params->{other}->{isbn},
-            issn           => $params->{other}->{issn},
-            article_title  => $params->{other}->{article_title},
-            article_author => $params->{other}->{article_author},
-            article_pages  => $params->{other}->{article_pages},
+            title           => $params->{other}->{title},
+            container_title => $params->{other}->{container_title},
+            type            => lc($params->{other}->{type}),
+            author          => $params->{other}->{author},
+            year            => $params->{other}->{year},
+            volume          => $params->{other}->{volume},
+            part_edition    => $params->{other}->{part_edition},
+            isbn            => $params->{other}->{isbn},
+            issn            => $params->{other}->{issn},
+            article_title   => $params->{other}->{article_title},
+            article_author  => $params->{other}->{article_author},
+            article_pages   => $params->{other}->{article_pages},
             # Include the custom fields
             %$custom
         };
+        if ($request_details->{type} eq 'article') {
+            $request_details->{container_title} = $params->{other}->{title}
+                if $params->{other}->{title};
+            $request_details->{title} = $params->{other}->{article_title}
+                if $params->{other}->{article_title};
+            $request_details->{pages} = $params->{other}->{article_pages}
+                if $params->{other}->{article_pages};
+            $request_details->{author} = $params->{other}->{article_author}
+                if $params->{other}->{article_author};
+        }
         while ( my ( $type, $value ) = each %{$request_details} ) {
             Koha::Illrequestattribute->new({
                 illrequest_id => $request->illrequest_id,
