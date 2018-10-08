@@ -19,25 +19,25 @@
         <label class="required" for="type">Type:</label>
         <select name="type" id="type">
           <option value=""/>
-          [% IF whole.value.other.type == "Book" %]
-          <option value="Book" selected="selected">Book</option>
+          [% IF whole.value.other.type.lower == "book" %]
+          <option value="book" selected="selected">Book</option>
           [% ELSE %]
-          <option value="Book">Book</option>
+          <option value="book">Book</option>
           [% END %]
-          [% IF whole.value.other.type == "Article" %]
-          <option value="Article" selected="selected">Article</option>
+          [% IF whole.value.other.type.lower == "article" %]
+          <option value="article" selected="selected">Article</option>
           [% ELSE %]
-          <option value="Article">Article</option>
+          <option value="article">Article</option>
           [% END %]
-          [% IF whole.value.other.type == "Journal" %]
-          <option value="Journal" selected="selected">Journal</option>
+          [% IF whole.value.other.type.lower == "journal" %]
+          <option value="journal" selected="selected">Journal</option>
           [% ELSE %]
-          <option value="Journal">Journal</option>
+          <option value="journal">Journal</option>
           [% END %]
-          [% IF whole.value.other.type == "Other" %]
-          <option value="Other" selected="selected">Other</option>
+          [% IF whole.value.other.type.lower == "other" %]
+          <option value="other" selected="selected">Other</option>
           [% ELSE %]
-          <option value="Other">Other</option>
+          <option value="other">Other</option>
           [% END %]
         </select>
       </li>
