@@ -57,7 +57,7 @@
     <input name="backend" id="method" value="FreeForm" type="hidden"/>
     <ol id="publication-freeform-fields">
       <li>
-        <label class="required" for="title">Publication Title:</label>
+        <label class="required" for="title">Publication title:</label>
         <input type="text" name="title" id="title" value="[% whole.value.other.title %]" />
       </li>
       <li>
@@ -125,7 +125,7 @@
     </button> 
   </fieldset>
   <fieldset class="rows">
-    <legend>Borrower options</legend>
+    <legend>Patron options</legend>
     <ol>
       <li>
         <label class="required" for="cardnumber">
@@ -135,7 +135,7 @@
                type="text" value="" />
       </li>
       <li>
-        <label class="required" for="branchcode">Destination branch:</label>
+        <label class="required" for="branchcode">Destination library:</label>
         <select id="branchcode" name="branchcode">
           <option value="" />
           [% FOREACH branch IN branches %]
