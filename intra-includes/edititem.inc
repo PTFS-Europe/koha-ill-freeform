@@ -51,7 +51,7 @@
     <input name="illrequest_id" id="illrequest_id" value="[% whole.value.request.id %]" type="hidden"/>
     <ol id="publication-freeform-fields">
       <li>
-        <label class="required" for="title">Publication Title:</label>
+        <label class="required" for="title">Publication title:</label>
         <input type="text" name="title" id="title" value="[% whole.value.other.title %]" />
       </li>
       <li>
