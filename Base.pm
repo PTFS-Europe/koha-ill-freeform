@@ -98,7 +98,10 @@ sub capabilities {
         get_requested_partners => sub { _get_requested_partners(@_); },
 
         # Set the requested partner email address(es)
-        set_requested_partners => sub { _set_requested_partners(@_); }
+        set_requested_partners => sub { _set_requested_partners(@_); },
+
+        # Migrate
+        migrate => sub { $self->migrate(@_); }
     };
     return $capabilities->{$name};
 }
@@ -645,7 +648,10 @@ sub migrate {
 
     # Cleanup any outstanding work, close the request.
     elsif ( $stage eq 'emigrate' ) {
-        my $request = $params->{request};
+        my $new_request = $params->{request};
+        my $from_id = $new_request->illrequestattributes->find(
+            { type => 'migrated_from' } )->value;
+        my $request     = Koha::Illrequests->find($from_id);
 
         # Just cancel the original request now it's been migrated away
         $request->status("REQREV");
@@ -658,6 +664,7 @@ sub migrate {
             message => '',
             method  => 'migrate',
             stage   => 'commit',
+            next    => 'illview',
             value   => $params,
         };
     }
