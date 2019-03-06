@@ -177,6 +177,15 @@ sub create {
     my $stage = $other->{stage};
     if ( !$stage || $stage eq 'init' ) {
 
+        # First thing we want to do, is check if we're receiving
+        # an OpenURL and transform it into something we can
+        # understand
+        if ($other->{openurl}) {
+            # We only want to transform once
+            delete $other->{openurl};
+            $params = _openurl_to_ill($params);
+        }
+
         # We simply need our template .INC to produce a form.
         return {
             error   => 0,
@@ -820,6 +829,7 @@ sub _get_core_fields {
         author          => 'Author',
         isbn            => 'ISBN',
         issn            => 'ISSN',
+        pages           => 'Pages',
         part_edition    => 'Part / Edition',
         volume          => 'Volume',
         year            => 'Year',
@@ -827,6 +837,95 @@ sub _get_core_fields {
         article_author  => 'Part Author',
         article_pages   => 'Part Pages',
     };
+}
+
+=head3 _openurl_to_ill
+
+Take a hashref of OpenURL parameters and return
+those same parameters but transformed to the ILL
+schema
+
+=cut
+
+sub _openurl_to_ill {
+    my ($params) = @_;
+
+    # Parameters to not place in our custom
+    # parameters arrays
+    my $ignore = {
+        openurl    => 1,
+        backend    => 1,
+        method     => 1,
+        opac       => 1,
+        cardnumber => 1,
+        branchcode => 1,
+        userid     => 1,
+        password   => 1,
+        koha_login_context => 1,
+        stage => 1
+    };
+
+    my $transform_metadata = {
+        genre   => 'type',
+        content => 'type',
+        format  => 'type',
+        atitle  => 'title',
+        aulast  => 'author',
+        author  => 'author',
+        date    => 'year',
+        volume  => 'volume',
+        isbn    => 'isbn',
+        issn    => 'issn',
+        year    => 'year',
+        title   => 'article_title',
+        author  => 'author',
+        aulast  => 'article_author',
+        pages   => 'article_pages',
+    };
+
+    my $transform_value = {
+        type => {
+            fulltext   => 'article',
+            selectedft => 'article',
+            print      => 'book',
+            ebook      => 'book'
+        }
+    };
+
+    my $return = {};
+    my $custom_key_del = [];
+    my $custom_value_del = [];
+    # First make sure our keys are correct
+    foreach my $meta_key(keys %{$params->{other}}) {
+        # If we are transforming this property...
+        if (exists $transform_metadata->{$meta_key}) {
+            # ...do it
+            $return->{$transform_metadata->{$meta_key}} = $params->{other}->{$meta_key};
+        } else {
+            # Otherwise, pass it through untransformed and maybe move it
+            # to our custom parameters array
+            if (!exists $ignore->{$meta_key}) {
+                push @{$custom_key_del}, $meta_key;
+                push @{$custom_value_del}, $params->{other}->{$meta_key};
+            } else {
+                $return->{$meta_key} = $params->{other}->{$meta_key};
+            }
+        }
+    }
+    # Now check our values are correct
+    foreach my $val_key(keys %{$return}) {
+        my $value = $return->{$val_key};
+        if (exists $transform_value->{$val_key} && exists $transform_value->{$val_key}->{$value}) {
+            $return->{$val_key} = $transform_value->{$val_key}->{$value};
+        }
+    }
+    if (scalar @{$custom_key_del} > 0) {
+        $return->{custom_key_del} = join("\t", @{$custom_key_del});
+        $return->{custom_value_del} = join("\t", @{$custom_value_del});
+    }
+    $params->{other} = $return;
+    return $params;
+
 }
 
 =head1 AUTHORS
