@@ -132,9 +132,15 @@
         <select id="branchcode" name="branchcode">
           <option value="" />
           [% FOREACH branch IN branches %]
+            [% IF whole.value.other.branchcode && branch.branchcode == whole.value.other.branchcode %]
+            <option value="[% branch.branchcode %]" selected>
+              [% branch.branchname %]
+            </option>
+            [% ELSE %]
             <option value="[% branch.branchcode %]">
               [% branch.branchname %]
             </option>
+            [% END %]
           [% END %]
         </select>
       </li>
