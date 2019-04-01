@@ -143,7 +143,7 @@ sub status_graph {
             prev_actions =>
               [ 'NEW', 'REQ', 'GENREQ', 'REQREV', 'QUEUED', 'CANCREQ', ],
             id             => 'MIG',
-            name           => 'Backend Migration',
+            name           => 'Switched provider',
             ui_method_name => 'Switch provider',
             method         => 'migrate',
             next_actions   => [],
