@@ -20,6 +20,7 @@ package Koha::Illbackends::FreeForm::Base;
 use Modern::Perl;
 use DateTime;
 use File::Basename qw( dirname );
+use JSON qw( to_json );
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
 use C4::Biblio qw( AddBiblio );
@@ -66,11 +67,16 @@ well as the option to enter additional fields with arbitrary names & values.
 sub new {
 
     # -> instantiate the backend
-    my ($class) = @_;
+    my ( $class, $params ) = @_;
     my $self = {
-        framework => 'FA'
+        framework => 'FA',
+        templates => {
+            'FREEFORM_MIGRATE_IN' =>
+              dirname(__FILE__) . '/intra-includes/log/freeform_migrate_in.tt'
+        }
     };
     bless( $self, $class );
+    $self->_logger( $params->{logger} ) if ( $params->{logger} );
     return $self;
 }
 
@@ -126,7 +132,7 @@ sub metadata {
     my $attrs       = $request->illrequestattributes;
     my $metadata    = {};
     my @ignore      = ('requested_partners');
-	my $core_fields = _get_core_fields();
+    my $core_fields = _get_core_fields();
     while ( my $attr = $attrs->next ) {
         my $type = $attr->type;
         if ( !grep { $_ eq $type } @ignore ) {
@@ -153,7 +159,7 @@ sub status_graph {
             name           => 'Switched provider',
             ui_method_name => 'Switch provider',
             method         => 'migrate',
-            next_actions   => [],
+            next_actions   => [ 'REQ', 'GENREQ', 'KILL', 'MIG' ],
             ui_method_icon => 'fa-search',
         },
         EDITITEM => {
@@ -443,6 +449,7 @@ sub edititem {
 			method  => "edititem",
 			stage   => "form",
 		};
+
         # Received completed details of form.  Validate and create request.
         ## Validate
         my $failed = 0;
@@ -668,73 +675,57 @@ sub migrate {
         };
     }
 
-    # Recieve a new request from another backend and suppliment it with
-    # anything we require specifically for this backend.
-    if ( !$stage || $stage eq 'immigrate' ) {
-        my $original_request =
-          Koha::Illrequests->find( $other->{illrequest_id} );
-        my $new_request = $params->{request};
-        $new_request->borrowernumber( $original_request->borrowernumber );
-        $new_request->branchcode( $original_request->branchcode );
-        $new_request->status('NEW');
-        $new_request->backend( $self->name );
-        $new_request->placed( DateTime->now );
-        $new_request->updated( DateTime->now );
-        $new_request->store;
+    my $request = Koha::Illrequests->find( $other->{illrequest_id} );
 
-        my @default_attributes = (
-            qw/title type author year volume isbn issn article_title article_author pages/
-        );
-        my $original_attributes =
-          $original_request->illrequestattributes->search(
-            { type => { '-in' => \@default_attributes } } );
+    # Record where we're migrating from, so we can log that
+    my $migrating_from = $request->backend;
 
-        my $request_details =
-          { map { $_->type => $_->value } ( $original_attributes->as_list ) };
-        $request_details->{migrated_from} = $original_request->illrequest_id;
-        while ( my ( $type, $value ) = each %{$request_details} ) {
-            Koha::Illrequestattribute->new(
-                {
-                    illrequest_id => $new_request->illrequest_id,
-                    type          => $type,
-                    value         => $value,
-                }
-            )->store;
-        }
-
-        return {
-            error   => 0,
-            status  => '',
-            message => '',
-            method  => 'migrate',
-            stage   => 'commit',
-            next    => 'emigrate',
-            value   => $params,
-        };
-    }
-
-    # Cleanup any outstanding work, close the request.
-    elsif ( $stage eq 'emigrate' ) {
-        my $new_request = $params->{request};
-        my $from_id = $new_request->illrequestattributes->find(
-            { type => 'migrated_from' } )->value;
-        my $request     = Koha::Illrequests->find($from_id);
-
-        # Just cancel the original request now it's been migrated away
-        $request->status("REQREV");
+    # Cancel the original order if required and appropriate
+    if ( $request->status eq 'REQ') {
+        $request->_backend_capability( 'cancel', { request => $request } );
+        # The orderid is no longer applicable
         $request->orderid(undef);
-        $request->store;
-
-        return {
-            error   => 0,
-            status  => '',
-            message => '',
-            method  => 'migrate',
-            stage   => 'commit',
-            next    => 'illview',
-            value   => $params,
-        };
     }
+
+    $request->status('MIG');
+    $request->backend( $self->name );
+    $request->updated( DateTime->now );
+    $request->store;
+
+    # Log that the migration took place
+    if ( $self->_logger ) {
+        my $logger = $self->_logger;
+        # TODO: This is a transitionary measure, we have removed set_data
+        # in Bug 20750, so calls to it won't work. But since 20750 is
+        # currently only in master, they only won't work in master. So
+        # we're temporarily going to allow for both cases
+        my $payload = {
+            modulename   => 'ILL',
+            actionname   => 'FREEFORM_MIGRATE_IN',
+            objectnumber => $request->id,
+            infos        => to_json({
+                log_origin    => $self->name,
+                migrated_from => $migrating_from,
+                migrated_to   => $self->name
+            })
+        };
+        if ($logger->can('set_data')) {
+            $logger->set_data($payload);
+            $logger->log_something();
+        } else {
+            $logger->log_something($payload);
+        }
+    }
+
+    return {
+        error   => 0,
+        status  => '',
+        message => '',
+        method  => 'migrate',
+        stage   => 'commit',
+        next    => 'illview',
+        value   => $params,
+    };
 }
 
 ## Helpers
@@ -1085,6 +1076,35 @@ sub _set_suppression {
     $record->append_fields($new942);
 
     return 1;
+}
+
+=head3 _logger
+
+    my $logger = $freeform->_logger($logger);
+    my $logger = $freeform->_logger;
+
+Getter/Setter for our Logger object.
+
+=cut
+
+sub _logger {
+    my ( $self, $logger ) = @_;
+    $self->{logger} = $logger if ($logger);
+    return $self->{logger};
+}
+
+=head3 get_log_template_path
+
+    my $path = $freeform->get_log_template_path($action);
+
+Given an action, return the path to the template for displaying
+that action log
+
+=cut
+
+sub get_log_template_path {
+    my ( $self, $action ) = @_;
+    return $self->{templates}->{$action};
 }
 
 =head1 AUTHORS

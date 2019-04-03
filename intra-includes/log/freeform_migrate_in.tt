@@ -1,0 +1,4 @@
+<p>
+[% log.timestamp | $KohaDates with_hours => 1 %] : <b>Switched provider </b>
+from &quot;[% log.info.migrated_from %]&quot; to &quot;[% log.info.migrated_to %]&quot;
+</p>
