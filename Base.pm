@@ -19,6 +19,7 @@ package Koha::Illbackends::FreeForm::Base;
 
 use Modern::Perl;
 use DateTime;
+use File::Basename qw( dirname );
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
 
@@ -188,6 +189,7 @@ sub create {
 
         # We simply need our template .INC to produce a form.
         return {
+            cwd     => dirname(__FILE__),
             error   => 0,
             status  => '',
             message => '',
@@ -199,15 +201,42 @@ sub create {
     elsif ( $stage eq 'form' ) {
 
         # We may be recieving a submitted form due to an additional
-        # custom field being added or deleted, so check for that
-        if ( defined $other->{'add_new_custom'} ) {
-            my ( $custom_keys, $custom_vals ) =
-              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-            push @{$custom_keys}, '---';
-            push @{$custom_vals}, '---';
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
-            my $result = {
+        # custom field being added or deleted, or the material type
+        # having been changed, so check for these things
+        if (
+            defined $other->{'add_new_custom'} ||
+            defined $other->{'custom_delete'} ||
+            defined $other->{'change_type'}
+        ) {
+            if ( defined $other->{'add_new_custom'} ) {
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                push @{$custom_keys}, '---';
+                push @{$custom_vals}, '---';
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            }
+            elsif ( defined $other->{'custom_delete'} ) {
+                my $delete_idx = $other->{'custom_delete'};
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                splice @{$custom_keys}, $delete_idx, 1;
+                splice @{$custom_vals}, $delete_idx, 1;
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            }
+            elsif ( defined $other->{'change_type'} ) {
+                # We may be receiving a submitted form due to the user having
+                # changed request material type, so we just need to go straight
+                # back to the form, the type has been changed in the params
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                delete $other->{'change_type'};
+            }
+            return {
+                cwd     => dirname(__FILE__),
                 status  => "",
                 message => "",
                 error   => 0,
@@ -215,25 +244,6 @@ sub create {
                 method  => "create",
                 stage   => "form",
             };
-            return $result;
-        }
-        elsif ( defined $other->{'custom_delete'} ) {
-            my $delete_idx = $other->{'custom_delete'};
-            my ( $custom_keys, $custom_vals ) =
-              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-            splice @{$custom_keys}, $delete_idx, 1;
-            splice @{$custom_vals}, $delete_idx, 1;
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
-            my $result = {
-                status  => "",
-                message => "",
-                error   => 0,
-                value   => $params,
-                method  => "create",
-                stage   => "form",
-            };
-            return $result;
         }
 
         # Received completed details of form.  Validate and create request.
@@ -241,6 +251,7 @@ sub create {
         my ( $brw_count, $brw ) =
           _validate_borrower( $other->{'cardnumber'} );
         my $result = {
+            cwd     => dirname(__FILE__),
             status  => "",
             message => "",
             error   => 1,
@@ -337,6 +348,7 @@ sub create {
 
         ## -> create response.
         return {
+            cwd     => dirname(__FILE__),
             error   => 0,
             status  => '',
             message => '',
@@ -349,6 +361,7 @@ sub create {
     else {
         # Invalid stage, return error.
         return {
+            cwd     => dirname(__FILE__),
             error   => 1,
             status  => 'unknown_stage',
             message => '',
@@ -391,6 +404,7 @@ sub edititem {
 		$other->{'custom_value_del'} = join "\t", @{$custom_vals};
         # Pass everything back to the template
         return {
+            cwd     => dirname(__FILE__),
             error   => 0,
             status  => '',
             message => '',
@@ -400,10 +414,56 @@ sub edititem {
         };
     }
     elsif ( $stage eq 'form' ) {
+        # We may be recieving a submitted form due to an additional
+        # custom field being added or deleted, or the material type
+        # having been changed, so check for these things
+        if (
+            defined $other->{'add_new_custom'} ||
+            defined $other->{'custom_delete'} ||
+            defined $other->{'change_type'}
+        ) {
+            if ( defined $other->{'add_new_custom'} ) {
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                push @{$custom_keys}, '---';
+                push @{$custom_vals}, '---';
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            }
+            elsif ( defined $other->{'custom_delete'} ) {
+                my $delete_idx = $other->{'custom_delete'};
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                splice @{$custom_keys}, $delete_idx, 1;
+                splice @{$custom_vals}, $delete_idx, 1;
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            }
+            elsif ( defined $other->{'change_type'} ) {
+                # We may be receiving a submitted form due to the user having
+                # changed request material type, so we just need to go straight
+                # back to the form, the type has been changed in the params
+                my ( $custom_keys, $custom_vals ) =
+                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                delete $other->{'change_type'};
+            }
+            return {
+                cwd     => dirname(__FILE__),
+                status  => "",
+                message => "",
+                error   => 0,
+                value   => $params,
+                method  => "edititem",
+                stage   => "form",
+            };
+        }
 		# We don't want the request ID param getting any further
 		delete $other->{illrequest_id};
 
 		my $result = {
+            cwd     => dirname(__FILE__),
 			status  => "",
 			message => "",
 			error   => 1,
@@ -609,6 +669,52 @@ sub migrate {
 
     my $stage = $other->{stage};
     my $step  = $other->{step};
+
+    # We may be recieving a submitted form due to an additional
+    # custom field being added or deleted, or the material type
+    # having been changed, so check for these things
+    if (
+        defined $other->{'add_new_custom'} ||
+        defined $other->{'custom_delete'} ||
+        defined $other->{'change_type'}
+    ) {
+        if ( defined $other->{'add_new_custom'} ) {
+            my ( $custom_keys, $custom_vals ) =
+            _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            push @{$custom_keys}, '---';
+            push @{$custom_vals}, '---';
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+        }
+        elsif ( defined $other->{'custom_delete'} ) {
+            my $delete_idx = $other->{'custom_delete'};
+            my ( $custom_keys, $custom_vals ) =
+            _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            splice @{$custom_keys}, $delete_idx, 1;
+            splice @{$custom_vals}, $delete_idx, 1;
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+        }
+        elsif ( defined $other->{'change_type'} ) {
+            # We may be receiving a submitted form due to the user having
+            # changed request material type, so we just need to go straight
+            # back to the form, the type has been changed in the params
+            my ( $custom_keys, $custom_vals ) =
+            _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
+            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
+            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            delete $other->{'change_type'};
+        }
+        return {
+            cwd     => dirname(__FILE__),
+            status  => "",
+            message => "",
+            error   => 0,
+            value   => $params,
+            method  => "create",
+            stage   => "form",
+        };
+    }
 
     # Recieve a new request from another backend and suppliment it with
     # anything we require specifically for this backend.
@@ -823,19 +929,34 @@ Return a hashref of core fields
 
 sub _get_core_fields {
     return {
-        type            => 'Type',
-        title           => 'Title',
-        container_title => 'Container Title',
-        author          => 'Author',
-        isbn            => 'ISBN',
-        issn            => 'ISSN',
-        pages           => 'Pages',
-        part_edition    => 'Part / Edition',
-        volume          => 'Volume',
-        year            => 'Year',
-        article_title   => 'Part Title',
-        article_author  => 'Part Author',
-        article_pages   => 'Part Pages',
+        article_author   =>  'Article author',
+        article_pages    =>  'Pages',
+        article_title    =>  'Article title',
+        author           =>  'Author',
+        chapter_author   =>  'Chapter author',
+        chapter          =>  'Chapter',
+        conference_date  =>  'Conference date',
+        container_title  =>  'Container title',
+        doi              =>  'DOI',
+        editor           =>  'Editor',
+        institution      =>  'Institution',
+        isbn             =>  'ISBN',
+        issn             =>  'ISSN',
+        issue            =>  'Issue',
+        pages            =>  'Pages',
+        paper_author     =>  'Paper author',
+        paper_title      =>  'Paper title',
+        part_edition     =>  'Part / Edition',
+        publication      =>  'Publication',
+        published_date   =>  'Publication date',
+        published_place  =>  'Place of publication',
+        publisher        =>  'Publisher',
+        sponsor          =>  'Sponsor',
+        title            =>  'Title',
+        type             =>  'Type',
+        venue            =>  'Venue',
+        volume           =>  'Volume',
+        year             =>  'Year'
     };
 }
 

@@ -18,7 +18,7 @@
 
 [% IF whole.stage == "form" %]
 <h2>Create a manual ILL request</h2>
-<form method="POST" action=[% here %]>
+<form id="freeform_create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>General details</legend>
     <ol id="general-freeform-fields">
@@ -31,15 +31,30 @@
           [% ELSE %]
           <option value="book">Book</option>
           [% END %]
-          [% IF whole.value.other.type.lower == "article" %]
-          <option value="article" selected="selected">Article</option>
+          [% IF whole.value.other.type.lower == "chapter" %]
+          <option value="chapter" selected="selected">Chapter</option>
           [% ELSE %]
-          <option value="article">Article</option>
+          <option value="chapter">Chapter</option>
           [% END %]
           [% IF whole.value.other.type.lower == "journal" %]
           <option value="journal" selected="selected">Journal</option>
           [% ELSE %]
           <option value="journal">Journal</option>
+          [% END %]
+          [% IF whole.value.other.type.lower == "article" %]
+          <option value="article" selected="selected">Journal article</option>
+          [% ELSE %]
+          <option value="article">Journal article</option>
+          [% END %]
+          [% IF whole.value.other.type.lower == "thesis" %]
+          <option value="thesis" selected="selected">Thesis</option>
+          [% ELSE %]
+          <option value="thesis">Thesis</option>
+          [% END %]
+          [% IF whole.value.other.type.lower == "conference" %]
+          <option value="conference" selected="selected">Conference</option>
+          [% ELSE %]
+          <option value="conference">Conference</option>
           [% END %]
           [% IF whole.value.other.type.lower == "other" %]
           <option value="other" selected="selected">Other</option>
@@ -50,59 +65,11 @@
       </li>
     </ol>
   </fieldset>
-  <fieldset class="rows">
-    <legend>Publication details</legend>
-    <input name="stage" id="stage" value="form" type="hidden"/>
-    <input name="method" id="method" value="create" type="hidden"/>
-    <input name="backend" id="method" value="FreeForm" type="hidden"/>
-    <ol id="publication-freeform-fields">
-      <li>
-        <label class="required" for="title">Publication title:</label>
-        <input type="text" name="title" id="title" value="[% whole.value.other.title %]" />
-      </li>
-      <li>
-        <label for="author">Author / editor:</label>
-        <input type="text" name="author" id="author" value="[% whole.value.other.author %]" />
-      </li>
-      <li>
-        <label for="year">Year:</label>
-        <input type="text" name="year" id="year" value="[% whole.value.other.year %]" />
-      </li>
-      <li>
-        <label for="volume">Volume:</label>
-        <input type="text" name="volume" id="volume" value="[% whole.value.other.volume %]" />
-      </li>
-      <li>
-        <label for="part_edition">Part / edition:</label>
-        <input type="text" name="part_edition" id="part_edition" value="[% whole.value.other.part_edition %]" />
-      </li>
-      <li>
-        <label for="isbn">ISBN:</label>
-        <input type="text" name="isbn" id="isbn" value="[% whole.value.other.isbn %]" />
-      </li>
-      <li>
-        <label for="issn">ISSN:</label>
-        <input type="text" name="issn" id="issn" value="[% whole.value.other.issn %]" />
-      </li>
-    </ol>
-  </fieldset>
-  <fieldset class="rows">
-    <legend>Article / chapter / part details</legend>
-    <ol id="article-freeform-fields">
-      <li>
-        <label for="article_title">Title:</label>
-        <input type="text" name="article_title" id="article_title" value="[% whole.value.other.article_title %]" />
-      </li>
-      <li>
-        <label for="article_author">Author:</label>
-        <input type="text" name="article_author" id="article_author" value="[% whole.value.other.article_author %]" />
-      </li>
-      <li>
-        <label for="article_pages">Pages:</label>
-        <input type="text" name="article_pages" id="article_pages" value="[% whole.value.other.article_pages %]" />
-      </li>
-    </ol>
-  </fieldset>
+  [% cwd = whole.cwd %]
+  [% type = whole.value.other.type %]
+  [% IF type %]
+      [% INCLUDE "${cwd}/shared-includes/forms/${type}.inc" %]
+  [% END %]
   <fieldset class="rows">
     <legend>Custom fields</legend>
     <ol id="freeform-fields">
@@ -151,6 +118,9 @@
     <input class="btn btn-default" type="submit" value="Create"/>
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
   </fieldset>
+  <input type="hidden" name="method" value="create" />
+  <input type="hidden" name="stage" value="form" />
+  <input type="hidden" name="backend" value="FreeForm" />
 </form>
 
 [% ELSE %]
@@ -179,6 +149,12 @@
                     $(event.target).parent().remove();
                 }
             );
+            $('#type').change(function() {
+                $('#freeform_create_form').prepend(
+                    '<input type="hidden" name="change_type" value="1" />'
+                );
+                $('#freeform_create_form').submit();
+            });
         });
     // ]]>
 </script>
