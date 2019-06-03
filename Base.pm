@@ -260,12 +260,7 @@ sub create {
             stage   => "form",
         };
         my $failed = 0;
-        if ( !$other->{'title'} ) {
-            $result->{status} = "missing_title";
-            $result->{value}  = $params;
-            $failed           = 1;
-        }
-        elsif ( !$other->{'type'} ) {
+        if ( !$other->{'type'} ) {
             $result->{status} = "missing_type";
             $result->{value}  = $params;
             $failed           = 1;
@@ -474,18 +469,8 @@ sub edititem {
         # Received completed details of form.  Validate and create request.
         ## Validate
         my $failed = 0;
-        if ( !$other->{'title'} ) {
-            $result->{status} = "missing_title";
-            $result->{value}  = $params;
-            $failed           = 1;
-        }
-        elsif ( !$other->{'type'} ) {
+        if ( !$other->{'type'} ) {
             $result->{status} = "missing_type";
-            $result->{value}  = $params;
-            $failed           = 1;
-		}
-        elsif ( !$other->{'author'} ) {
-            $result->{status} = "missing_author";
             $result->{value}  = $params;
             $failed           = 1;
         }

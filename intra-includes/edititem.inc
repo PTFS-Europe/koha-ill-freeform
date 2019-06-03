@@ -1,10 +1,6 @@
 [% IF whole.error %]
-[% IF whole.status == 'missing_title' %]
-<p><em>Please Note:</em> Mandatory field Title is missing.</p>
-[% ELSIF whole.status == 'missing_type' %]
+[% IF whole.status == 'missing_type' %]
 <p><em>Please Note:</em> Mandatory field Type is missing.</p>
-[% ELSIF whole.status == 'missing_author' %]
-<p><em>Please Note:</em> Mandatory field Author is missing.</p>
 [% ELSE %]
 <p>Unhandled error</p>
 [% END %]

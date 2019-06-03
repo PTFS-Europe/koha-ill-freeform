@@ -1,10 +1,6 @@
 [% IF whole.error %]
-[% IF whole.status == 'missing_title' %]
-<p><em>Please Note:</em> Mandatory field Title is missing.</p>
-[% ELSIF whole.status == 'missing_identifier' %]
+[% IF whole.status == 'missing_identifier' %]
 <p><em>Please Note:</em> Mandatory field Identifier is missing.</p>
-[% ELSIF whole.status == 'missing_author' %]
-<p><em>Please Note:</em> Mandatory field Author is missing.</p>
 [% ELSIF whole.status == 'missing_branch' %]
 <p><em>Please Note:</em> Branch is a mandatory field.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
