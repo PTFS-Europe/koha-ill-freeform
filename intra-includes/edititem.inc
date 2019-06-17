@@ -62,12 +62,12 @@
   <fieldset class="rows">
     <legend>Custom fields</legend>
     <ol id="freeform-fields">
-      [% custom_keys = whole.value.other.custom_key_del.split('\t') %]
-      [% custom_values = whole.value.other.custom_value_del.split('\t') %]
+      [% keys = whole.value.other.custom_key.split('\0') %]
+      [% values = whole.value.other.custom_value.split('\0') %]
       [% i = 0 %]
-      [% FOR key IN custom_keys %]
+      [% FOREACH key IN keys %]
       <li class="form-horizontal">
-        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% custom_values.$i %]">
+        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% values.$i %]">
         <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
             <span class="fa fa-delete"></span>Delete
         </button></li>

@@ -69,8 +69,6 @@
   <fieldset class="rows">
     <legend>Custom fields</legend>
     <ol id="freeform-fields">
-      [% custom_keys = whole.value.other.custom_key_del.split('\t') %]
-      [% custom_values = whole.value.other.custom_value_del.split('\t') %]
       [% i = 0 %]
       [% FOR key IN custom_keys %]
       <li class="form-horizontal">

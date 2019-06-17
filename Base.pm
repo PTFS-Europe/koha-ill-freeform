@@ -213,8 +213,8 @@ sub create {
                 _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
                 push @{$custom_keys}, '---';
                 push @{$custom_vals}, '---';
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                $other->{'custom_key'}   = join "\0", @{$custom_keys};
+                $other->{'custom_value'} = join "\0", @{$custom_vals};
             }
             elsif ( defined $other->{'custom_delete'} ) {
                 my $delete_idx = $other->{'custom_delete'};
@@ -222,17 +222,13 @@ sub create {
                 _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
                 splice @{$custom_keys}, $delete_idx, 1;
                 splice @{$custom_vals}, $delete_idx, 1;
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                $other->{'custom_key'}   = join "\0", @{$custom_keys};
+                $other->{'custom_value'} = join "\0", @{$custom_vals};
             }
             elsif ( defined $other->{'change_type'} ) {
                 # We may be receiving a submitted form due to the user having
                 # changed request material type, so we just need to go straight
                 # back to the form, the type has been changed in the params
-                my ( $custom_keys, $custom_vals ) =
-                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
                 delete $other->{'change_type'};
             }
             return {
@@ -289,13 +285,7 @@ sub create {
             $result->{error} = 0;
             $failed          = 1;
         }
-        if ($failed) {
-            my ( $custom_keys, $custom_vals ) =
-              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
-            return $result;
-        }
+        return $result if $failed;
 
         ## Create request
 
@@ -395,8 +385,8 @@ sub edititem {
 				$other->{$attr->{type}} = $attr->{value};
 			}
 		}
-		$other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-		$other->{'custom_value_del'} = join "\t", @{$custom_vals};
+		$other->{'custom_key'}   = join "\0", @{$custom_keys};
+		$other->{'custom_value'} = join "\0", @{$custom_vals};
         # Pass everything back to the template
         return {
             cwd     => dirname(__FILE__),
@@ -422,8 +412,8 @@ sub edititem {
                 _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
                 push @{$custom_keys}, '---';
                 push @{$custom_vals}, '---';
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                $other->{'custom_key'}   = join "\0", @{$custom_keys};
+                $other->{'custom_value'} = join "\0", @{$custom_vals};
             }
             elsif ( defined $other->{'custom_delete'} ) {
                 my $delete_idx = $other->{'custom_delete'};
@@ -431,17 +421,13 @@ sub edititem {
                 _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
                 splice @{$custom_keys}, $delete_idx, 1;
                 splice @{$custom_vals}, $delete_idx, 1;
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+                $other->{'custom_key'}   = join "\0", @{$custom_keys};
+                $other->{'custom_value'} = join "\0", @{$custom_vals};
             }
             elsif ( defined $other->{'change_type'} ) {
                 # We may be receiving a submitted form due to the user having
                 # changed request material type, so we just need to go straight
                 # back to the form, the type has been changed in the params
-                my ( $custom_keys, $custom_vals ) =
-                _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-                $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-                $other->{'custom_value_del'} = join "\t", @{$custom_vals};
                 delete $other->{'change_type'};
             }
             return {
@@ -474,13 +460,7 @@ sub edititem {
             $result->{value}  = $params;
             $failed           = 1;
         }
-        if ($failed) {
-            my ( $custom_keys, $custom_vals ) =
-              _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
-            return $result;
-        }
+        return $result if $failed;
 
         ## Update request
 
@@ -668,8 +648,8 @@ sub migrate {
             _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
             push @{$custom_keys}, '---';
             push @{$custom_vals}, '---';
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            $other->{'custom_key'}   = join "\0", @{$custom_keys};
+            $other->{'custom_value'} = join "\0", @{$custom_vals};
         }
         elsif ( defined $other->{'custom_delete'} ) {
             my $delete_idx = $other->{'custom_delete'};
@@ -677,17 +657,13 @@ sub migrate {
             _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
             splice @{$custom_keys}, $delete_idx, 1;
             splice @{$custom_vals}, $delete_idx, 1;
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
+            $other->{'custom_key'}   = join "\0", @{$custom_keys};
+            $other->{'custom_value'} = join "\0", @{$custom_vals};
         }
         elsif ( defined $other->{'change_type'} ) {
             # We may be receiving a submitted form due to the user having
             # changed request material type, so we just need to go straight
             # back to the form, the type has been changed in the params
-            my ( $custom_keys, $custom_vals ) =
-            _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
-            $other->{'custom_key_del'}   = join "\t", @{$custom_keys};
-            $other->{'custom_value_del'} = join "\t", @{$custom_vals};
             delete $other->{'change_type'};
         }
         return {
@@ -1002,8 +978,8 @@ sub _openurl_to_ill {
     };
 
     my $return = {};
-    my $custom_key_del = [];
-    my $custom_value_del = [];
+    my $custom_key = [];
+    my $custom_value = [];
     # First make sure our keys are correct
     foreach my $meta_key(keys %{$params->{other}}) {
         # If we are transforming this property...
@@ -1014,8 +990,8 @@ sub _openurl_to_ill {
             # Otherwise, pass it through untransformed and maybe move it
             # to our custom parameters array
             if (!exists $ignore->{$meta_key}) {
-                push @{$custom_key_del}, $meta_key;
-                push @{$custom_value_del}, $params->{other}->{$meta_key};
+                push @{$custom_key}, $meta_key;
+                push @{$custom_value}, $params->{other}->{$meta_key};
             } else {
                 $return->{$meta_key} = $params->{other}->{$meta_key};
             }
@@ -1028,9 +1004,9 @@ sub _openurl_to_ill {
             $return->{$val_key} = $transform_value->{$val_key}->{$value};
         }
     }
-    if (scalar @{$custom_key_del} > 0) {
-        $return->{custom_key_del} = join("\t", @{$custom_key_del});
-        $return->{custom_value_del} = join("\t", @{$custom_value_del});
+    if (scalar @{$custom_key} > 0) {
+        $return->{custom_key} = join("\0", @{$custom_key});
+        $return->{custom_value} = join("\0", @{$custom_value});
     }
     $params->{other} = $return;
     return $params;
