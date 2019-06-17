@@ -118,7 +118,7 @@
 [% BLOCK backend_jsinclude %]
 <script type="text/javascript">
     // <![CDATA[]
-        document.addEventListener("DOMContentLoaded", function() {})
+        document.addEventListener("DOMContentLoaded", function() {
             $('#add-new-fields').click(function(e) {
                 e.preventDefault();
                 var row = '<li class="form-horizontal">' +
