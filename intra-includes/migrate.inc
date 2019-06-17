@@ -147,59 +147,6 @@
 </script>
 [% END %]
 
-[% ELSIF whole.stage == "borrowers" %]
-<!-- We need to clarify the borrower that has been requested. -->
-<h2>Borrower selection</h2>
-<form method="POST" action=[% here %]>
-  <fieldset class="rows">
-    <legend>Available borrowers for surname [% surname %]</legend>
-    <input name="stage" id="stage" value="form" type="hidden"/>
-    <input name="method" id="method" value="create" type="hidden"/>
-    <input name="backend" id="backend" value="[% whole.value.other.backend %]" type="hidden"/>
-    <input name="branchcode" id="branchcode" value="[% whole.value.other.branchcode %]" type="hidden"/>
-    <input name="isbn" id="isbn" value="[% whole.value.other.isbn %]" type="hidden"/>
-    <input name="issn" id="issn" value="[% whole.value.other.issn %]" type="hidden"/>
-    <input name="title" id="title" value="[% whole.value.other.title %]" type="hidden"/>
-    <input name="author" id="author" value="[% whole.value.other.author %]" type="hidden"/>
-    <input name="year" id="year" value="[% whole.value.other.year %]" type="hidden"/>
-    <input name="volume" id="volume" value="[% whole.value.other.volume %]" type="hidden"/>
-    <input name="part_edition" id="part_edition" value="[% whole.value.other.part_edition %]" type="hidden"/>
-    <input name="type" id="type" value="[% whole.value.other.type %]" type="hidden"/>
-    <input name="article_title" id="article_title" value="[% whole.value.other.article_title %]" type="hidden"/>
-    <input name="article_author" id="article_author" value="[% whole.value.other.article_author %]" type="hidden"/>
-    <input name="article_pages" id="article_pages" value="[% whole.value.other.article_pages %]" type="hidden"/>
-    [% i = 0 %]
-    [% FOR key IN custom_keys %]
-    <input type="hidden" name="custom_key" id="custom_key" value="[% key %]">
-    <input type="hidden" name="custom_value" id="custom_value" value="[% custom_values.$i %]">
-    [% i = i + 1 %]
-    [% END %]
-    [% FOREACH opt IN whole.value %]
-    [% IF opt.key == "brw" %]
-    <ol>
-      <li>
-        <label class="required" for="brw">Borrower</label>
-        <select name="cardnumber" id="cardnumber">
-          <option value=""></option>
-          [% FOREACH brw IN opt.value %]
-          <option value="[% brw.cardnumber %]">
-            [% brw.firstname %] [% brw.surname %] ([% brw.cardnumber %])
-          </option>
-          [% END %]
-        </select>
-      </li>
-    </ol>
-    [% ELSE %]
-    <input name="[% opt.key %]" id="[% opt.key %]" value="[% opt.value %]" type="hidden"/>
-    [% END %]
-    [% END %]
-  </fieldset>
-  <fieldset class="action">
-    <input type="submit" value="Select"/>
-    <a class="cancel" href=[% parent %]>Cancel</a>
-  </fieldset>
-</form>
-
 [% ELSE %]
 <p>Unknown stage.  This should not have happened.
 
