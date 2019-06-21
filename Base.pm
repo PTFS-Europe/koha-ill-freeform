@@ -102,7 +102,10 @@ sub capabilities {
         set_requested_partners => sub { _set_requested_partners(@_); },
 
         # Migrate
-        migrate => sub { $self->migrate(@_); }
+        migrate => sub { $self->migrate(@_); },
+
+        # Return whether we are ready to display availability
+        should_display_availability => sub { _can_create_request(@_) },
     };
     return $capabilities->{$name};
 }
@@ -203,11 +206,7 @@ sub create {
         # We may be recieving a submitted form due to an additional
         # custom field being added or deleted, or the material type
         # having been changed, so check for these things
-        if (
-            defined $other->{'add_new_custom'} ||
-            defined $other->{'custom_delete'} ||
-            defined $other->{'change_type'}
-        ) {
+        if (!_can_create_request($other)) {
             if ( defined $other->{'add_new_custom'} ) {
                 my ( $custom_keys, $custom_vals ) =
                 _get_custom( $other->{'custom_key'}, $other->{'custom_value'} );
@@ -1011,6 +1010,22 @@ sub _openurl_to_ill {
     $params->{other} = $return;
     return $params;
 
+}
+
+=head3 _can_create_request
+
+Given the parameters we've been passed, should we create the request
+
+=cut
+
+sub _can_create_request {
+    my ($params) = @_;
+    return (
+        $params->{'stage'} eq 'form' && 
+        !defined $params->{'add_new_custom'} &&
+        !defined $params->{'custom_delete'} &&
+        !defined $params->{'change_type'}
+    ) ? 1 : 0;
 }
 
 =head1 AUTHORS
