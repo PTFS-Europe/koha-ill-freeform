@@ -1021,6 +1021,7 @@ Given the parameters we've been passed, should we create the request
 sub _can_create_request {
     my ($params) = @_;
     return (
+        defined $params->{'stage'} &&
         $params->{'stage'} eq 'form' && 
         !defined $params->{'add_new_custom'} &&
         !defined $params->{'custom_delete'} &&
