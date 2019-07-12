@@ -42,5 +42,9 @@
             <label for="published_date">Publication date:</label>
             <input type="text" name="published_date" id="published_date" value="[% whole.value.other.published_date %]" />
         </li>
+        <li>
+            <label for="pages">Pages:</label>
+            <input type="text" name="pages" id="pages" value="[% whole.value.other.pages %]" />
+        </li>
     </ol>
 </fieldset>
