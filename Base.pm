@@ -22,6 +22,7 @@ use DateTime;
 use File::Basename qw( dirname );
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
+use C4::Biblio qw( AddBiblio );
 
 =head1 NAME
 
@@ -66,7 +67,9 @@ sub new {
 
     # -> instantiate the backend
     my ($class) = @_;
-    my $self = {};
+    my $self = {
+        framework => 'FA'
+    };
     bless( $self, $class );
     return $self;
 }
@@ -286,18 +289,6 @@ sub create {
         }
         return $result if $failed;
 
-        ## Create request
-
-        # ...Populate Illrequest
-        my $request = $params->{request};
-        $request->borrowernumber( $brw->borrowernumber );
-        $request->branchcode( $params->{other}->{branchcode} );
-        $request->status('NEW');
-        $request->backend( $params->{other}->{backend} );
-        $request->placed( DateTime->now );
-        $request->updated( DateTime->now );
-        $request->store;
-
         # ...Populate Illrequestattributes
         # generate $request_details
         my $request_details = _get_request_details($params, $other);
@@ -316,6 +307,22 @@ sub create {
             $request_details->{author} = $params->{other}->{article_author}
                 if $params->{other}->{article_author};
         }
+
+        ## Create request
+
+        # Create bib record
+        my $biblionumber = $self->_freeform2biblio($request_details);
+
+        # ...Populate Illrequest
+        my $request = $params->{request};
+        $request->biblio_id($biblionumber) unless $biblionumber == 0;
+        $request->borrowernumber( $brw->borrowernumber );
+        $request->branchcode( $params->{other}->{branchcode} );
+        $request->status('NEW');
+        $request->backend( $params->{other}->{backend} );
+        $request->placed( DateTime->now );
+        $request->updated( DateTime->now );
+        $request->store;
 
         while ( my ( $type, $value ) = each %{$request_details} ) {
             if ($value && length $value > 0) {
@@ -1027,6 +1034,67 @@ sub _can_create_request {
         !defined $params->{'custom_delete'} &&
         !defined $params->{'change_type'}
     ) ? 1 : 0;
+}
+
+=head3 _freeform2biblio
+
+Given supplied metadata from a freeform request, create a basic biblio
+record and return its ID
+
+=cut
+
+sub _freeform2biblio {
+    my ( $self, $metadata ) = @_;
+
+    # We only want to create biblios for books
+    return 0 unless $metadata->{type} eq 'book';
+
+    # We're going to try and populate author, title & ISBN
+    my $author = $metadata->{author} if $metadata->{author};
+    my $title = $metadata->{title} if $metadata->{title};
+    my $isbn = $metadata->{isbn} if $metadata->{isbn};
+
+    # Create the MARC::Record object and populate
+    my $record = MARC::Record->new();
+    if ($isbn) {
+        my $marc_isbn = MARC::Field->new( '020', '', '', a => $isbn );
+        $record->append_fields($marc_isbn);
+    }
+    if ($author) {
+        my $marc_author = MARC::Field->new( '100', '1', '', a => $author );
+        $record->append_fields($marc_author);
+    }
+    if ($title) {
+        my $marc_title = MARC::Field->new( '245', '0', '0', a => $title );
+        $record->append_fields($marc_title);
+    }
+
+    # Suppress the record
+    _set_suppression($record);
+
+    # We hardcode a framework name of 'FA', which will need to exist
+    # All this stuff should be configurable
+    my ($biblionumber, $biblioitemnumber) =
+        AddBiblio( $record, $self->{framework} );
+
+    return $biblionumber;
+}
+
+=head3 _set_suppression
+
+    _set_suppression($record);
+
+Take a MARC::Record object and set it to be suppressed
+
+=cut
+
+sub _set_suppression {
+    my ( $record ) = @_;
+
+    my $new942 = MARC::Field->new( '942', '', '', n => '1' );
+    $record->append_fields($new942);
+
+    return 1;
 }
 
 =head1 AUTHORS
