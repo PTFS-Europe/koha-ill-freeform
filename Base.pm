@@ -293,21 +293,6 @@ sub create {
         # generate $request_details
         my $request_details = _get_request_details($params, $other);
 
-        # Create additional metadata properties that conform
-        # to our common schema
-        $request_details->{type} = lc($params->{other}->{type});
-        $request_details->{author} = $params->{other}->{author};
-        if ($request_details->{type} eq 'article') {
-            $request_details->{container_title} = $params->{other}->{title}
-                if $params->{other}->{title};
-            $request_details->{title} = $params->{other}->{article_title}
-                if $params->{other}->{article_title};
-            $request_details->{pages} = $params->{other}->{article_pages}
-                if $params->{other}->{article_pages};
-            $request_details->{author} = $params->{other}->{article_author}
-                if $params->{other}->{article_author};
-        }
-
         ## Create request
 
         # Create bib record
@@ -698,7 +683,7 @@ sub migrate {
         $new_request->store;
 
         my @default_attributes = (
-            qw/title type author year volume isbn issn article_title article_author article_pages/
+            qw/title type author year volume isbn issn article_title article_author pages/
         );
         my $original_attributes =
           $original_request->illrequestattributes->search(
@@ -897,14 +882,12 @@ Return a hashref of core fields
 sub _get_core_fields {
     return {
         article_author   =>  'Article author',
-        article_pages    =>  'Pages',
         article_title    =>  'Article title',
         associated_id    =>  'Associated ID',
         author           =>  'Author',
         chapter_author   =>  'Chapter author',
         chapter          =>  'Chapter',
         conference_date  =>  'Conference date',
-        container_title  =>  'Container title',
         doi              =>  'DOI',
         editor           =>  'Editor',
         institution      =>  'Institution',
@@ -971,7 +954,7 @@ sub _openurl_to_ill {
         title   => 'article_title',
         author  => 'author',
         aulast  => 'article_author',
-        pages   => 'article_pages',
+        pages   => 'pages',
     };
 
     my $transform_value = {
