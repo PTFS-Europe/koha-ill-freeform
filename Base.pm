@@ -951,6 +951,7 @@ sub _openurl_to_ill {
         volume  => 'volume',
         isbn    => 'isbn',
         issn    => 'issn',
+	rft_id  => 'doi',
         year    => 'year',
         title   => 'title',
         author  => 'author',
