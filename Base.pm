@@ -947,6 +947,7 @@ sub _openurl_to_ill {
         aulast  => 'author',
         author  => 'author',
         date    => 'year',
+	issue   => 'issue',
         volume  => 'volume',
         isbn    => 'isbn',
         issn    => 'issn',
