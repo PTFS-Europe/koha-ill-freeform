@@ -964,7 +964,8 @@ sub _openurl_to_ill {
             fulltext   => 'article',
             selectedft => 'article',
             print      => 'book',
-            ebook      => 'book'
+            ebook      => 'book',
+	    journal    => 'journal'
         }
     };
 
