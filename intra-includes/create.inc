@@ -19,7 +19,7 @@
     <legend>Obecné údaje</legend>
     <ol id="general-freeform-fields">
       <li>
-        <label class="required" for="type">Typ:</label>
+        <label class="required" for="type">Typ požadovaného dokumentu:</label>
         <select name="type" id="type">
           <option value=""/>
           [% IF whole.value.other.type.lower == "book" %]
@@ -53,7 +53,7 @@
           <option value="conference">Konference</option>
           [% END %]
           [% IF whole.value.other.type.lower == "other" %]
-          <option value="other" selected="selected">Jiné</option>
+          <option value="other" selected="selected">Jiný</option>
           [% ELSE %]
           <option value="other">Jiný</option>
           [% END %]
