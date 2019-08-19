@@ -55,7 +55,7 @@
           [% IF whole.value.other.type.lower == "other" %]
           <option value="other" selected="selected">Jiné</option>
           [% ELSE %]
-          <option value="other">Jiné</option>
+          <option value="other">Jiný</option>
           [% END %]
         </select>
       </li>
