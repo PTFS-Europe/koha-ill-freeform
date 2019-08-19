@@ -1,5 +1,5 @@
 [% IF whole.error %]
-<p>Unhandled error</p>
+<p>Neznámá chyba</p>
 [% END %]
 
 [% IF whole.stage == "confirm" %]
@@ -11,9 +11,9 @@
   [% base_url = "/cgi-bin/koha/ill/ill-requests.pl" %]
   [% proceed_url = base_url _ "?method=confirm&stage=confirm" _
                    "&illrequest_id=" _ request.illrequest_id %]
-  <a class="btn btn-sm btn-default" href="[% proceed_url %]">Confirm request</a>
-  <a class="btn btn-sm btn-default cancel" href="[% base_url %]">Cancel</a>
+  <a class="btn btn-sm btn-default" href="[% proceed_url %]">Potvrdit požadavek</a>
+  <a class="btn btn-sm btn-default cancel" href="[% base_url %]">Zrušit</a>
 </p>
 [% ELSE %]
-<p>Unknown stage.  This should not have happened.
+<p>Neznámý stav.  K tomuto by nemělo dojít.
 [% END %]
