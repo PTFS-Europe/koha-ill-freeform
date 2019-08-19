@@ -1,61 +1,61 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Please Note:</em> Mandatory field Identifier is missing.</p>
+<p><em>Pozor:</em> Chybí povinné pole Identifikátor.</p>
 [% ELSIF whole.status == 'missing_branch' %]
-<p><em>Please Note:</em> Branch is a mandatory field.</p>
+<p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
-<p><em>Please Note:</em> The borrower details you entered are invalid.</p>
+<p><em>Pozor:</em> Vložili jste neplatné údaje o čtenáři.</p>
 [% ELSIF whole.status == 'invalid_branch' %]
-<p><em>Please Note:</em> The branch you chose is invalid.</p>
+<p><em>Pozor:</em> Vybrali jste neplatnou knihovnu.</p>
 [% ELSE %]
-<p>Unhandled error</p>
+<p>Neznámá chyba</p>
 [% END %]
 [% END %]
 
 [% IF whole.stage == "form" %]
-<h2>Create a manual ILL request</h2>
+<h2>Manuální vytvoření MVS požadavku</h2>
 <form id="freeform_create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
-    <legend>General details</legend>
+    <legend>Obecné údaje</legend>
     <ol id="general-freeform-fields">
       <li>
-        <label class="required" for="type">Type:</label>
+        <label class="required" for="type">Typ:</label>
         <select name="type" id="type">
           <option value=""/>
           [% IF whole.value.other.type.lower == "book" %]
-          <option value="book" selected="selected">Book</option>
+          <option value="book" selected="selected">Kniha</option>
           [% ELSE %]
-          <option value="book">Book</option>
+          <option value="book">Kniha</option>
           [% END %]
           [% IF whole.value.other.type.lower == "chapter" %]
-          <option value="chapter" selected="selected">Chapter</option>
+          <option value="chapter" selected="selected">Kapitola</option>
           [% ELSE %]
-          <option value="chapter">Chapter</option>
+          <option value="chapter">Kapitola</option>
           [% END %]
           [% IF whole.value.other.type.lower == "journal" %]
-          <option value="journal" selected="selected">Journal</option>
+          <option value="journal" selected="selected">Periodikum</option>
           [% ELSE %]
-          <option value="journal">Journal</option>
+          <option value="journal">Periodikum</option>
           [% END %]
           [% IF whole.value.other.type.lower == "article" %]
-          <option value="article" selected="selected">Journal article</option>
+          <option value="article" selected="selected">Článek v periodiku</option>
           [% ELSE %]
-          <option value="article">Journal article</option>
+          <option value="article">Článek v periodiku</option>
           [% END %]
           [% IF whole.value.other.type.lower == "thesis" %]
-          <option value="thesis" selected="selected">Thesis</option>
+          <option value="thesis" selected="selected">Závěrečná práce</option>
           [% ELSE %]
-          <option value="thesis">Thesis</option>
+          <option value="thesis">Závěrečná práce</option>
           [% END %]
           [% IF whole.value.other.type.lower == "conference" %]
-          <option value="conference" selected="selected">Conference</option>
+          <option value="conference" selected="selected">Konference</option>
           [% ELSE %]
-          <option value="conference">Conference</option>
+          <option value="conference">Konference</option>
           [% END %]
           [% IF whole.value.other.type.lower == "other" %]
-          <option value="other" selected="selected">Other</option>
+          <option value="other" selected="selected">Jiné</option>
           [% ELSE %]
-          <option value="other">Other</option>
+          <option value="other">Jiné</option>
           [% END %]
         </select>
       </li>
@@ -67,7 +67,7 @@
       [% INCLUDE "${cwd}/shared-includes/forms/${type}.inc" %]
   [% END %]
   <fieldset class="rows">
-    <legend>Custom fields</legend>
+    <legend>Uživatelská pole</legend>
     <ol id="freeform-fields">
       [% keys = whole.value.other.custom_key.split('\0') %]
       [% values = whole.value.other.custom_value.split('\0') %]
@@ -76,7 +76,7 @@
       <li class="form-horizontal">
         <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% values.$i %]">
         <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
-            <span class="fa fa-delete"></span>Delete
+            <span class="fa fa-delete"></span>Smazat
         </button></li>
       </li>
       [% i = i + 1 %]
@@ -84,21 +84,21 @@
     </ol>
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
-      Add new field
+      Přidat nové pole
     </button> 
   </fieldset>
   <fieldset class="rows">
-    <legend>Patron options</legend>
+    <legend>Údaje o čtenáři</legend>
     <ol>
       <li>
         <label class="required" for="cardnumber">
-          Card number, username or surname:
+          Číslo průkazky, uživatelské jméno nebo příjmení:
         </label>
         <input type="text" name="cardnumber" id="cardnumber"
                type="text" value="" />
       </li>
       <li>
-        <label class="required" for="branchcode">Destination library:</label>
+        <label class="required" for="branchcode">Cílová knihovna:</label>
         <select id="branchcode" name="branchcode">
           <option value="" />
           [% FOREACH branch IN branches %]
@@ -111,8 +111,8 @@
     </ol>
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Create"/>
-    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
+    <input type="submit" value="Vytvořit"/>
+    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
   <input type="hidden" name="stage" value="form" />
@@ -130,7 +130,7 @@
                     '<button type="button" class="btn btn-danger btn-sm ' +
                     'delete-new-field">' +
                     '<span class="fa fa-delete">' +
-                    '</span>Delete</button></li>';
+                    '</span>Smazat</button></li>';
                 $('#freeform-fields').append(row);
             });
             $('#freeform-fields').on('click', '.delete-new-field',
@@ -152,7 +152,7 @@
 
 [% ELSIF whole.stage == "borrowers" %]
 <!-- We need to clarify the borrower that has been requested. -->
-<h2>Borrower selection</h2>
+<h2>Výběr čtenáře</h2>
 <form method="POST" action=[% here %]>
   [% FOREACH prop IN whole.value.other.keys %]
     [% IF prop != 'custom_key' &&  prop != 'custom_value' && prop != 'cardnumber' %]
@@ -168,12 +168,12 @@
   [% i = i + 1 %]
   [% END %]
   <fieldset class="rows">
-    <legend>Available borrowers for surname [% surname %]</legend>
+    <legend>Tito čtenáři odpovídají příjmení [% surname %]</legend>
     [% FOREACH opt IN whole.value %]
     [% IF opt.key == "brw" %]
     <ol>
       <li>
-        <label class="required" for="brw">Borrower</label>
+        <label class="required" for="brw">Čtenář</label>
         <select name="cardnumber" id="cardnumber">
           <option value=""></option>
           [% FOREACH brw IN opt.value %]
@@ -188,12 +188,12 @@
     [% END %]
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Select"/>
-    <a class="cancel" href=[% parent %]>Cancel</a>
+    <input type="submit" value="Vybrat"/>
+    <a class="cancel" href=[% parent %]>Zrušit</a>
   </fieldset>
 </form>
 
 [% ELSE %]
-<p>Unknown stage.  This should not have happened.
+<p>Neznámý stav. Tato situace by neměla nastat.
 
 [% END %]
