@@ -1,8 +1,8 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_type' %]
-<p><em>Please Note:</em> Povinné pole Typ není vyplněno.</p>
+<p><em>Pozor:</em> Povinné pole Typ není vyplněno.</p>
 [% ELSE %]
-<p>Unhandled error</p>
+<p>Neznámá chyba</p>
 [% END %]
 [% END %]
 
