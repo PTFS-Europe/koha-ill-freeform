@@ -38,9 +38,9 @@
           <option value="journal">Periodikum</option>
           [% END %]
           [% IF whole.value.other.type.lower == "article" %]
-          <option value="article" selected="selected">Journal article</option>
+          <option value="article" selected="selected">Článek v periodiku</option>
           [% ELSE %]
-          <option value="article">Journal article</option>
+          <option value="article">Článek v periodiku</option>
           [% END %]
           [% IF whole.value.other.type.lower == "thesis" %]
           <option value="thesis" selected="selected">Závěrečná práce</option>
