@@ -13,7 +13,7 @@
 [% END %]
 
 [% IF whole.stage == "form" %]
-<h2>Manuální vytvoření MVS požadavku</h2>
+<h2>Ruční vytvoření MVS požadavku</h2>
 <form id="freeform_create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>Obecné údaje</legend>
