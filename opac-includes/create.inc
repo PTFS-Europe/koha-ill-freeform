@@ -2,18 +2,18 @@
 [% IF whole.status == 'missing_identifier' %]
 <p><em>Pozor:</em> Chybí povinné pole Identifikátor.</p>
 [% ELSIF whole.status == 'missing_branch' %]
-<p><em>Pozor:</em> Oddělení je povinné pole.</p>
+<p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
 <p><em>Pozor:</em> Vložili jste neplatné údaje o čtenáři.</p>
 [% ELSIF whole.status == 'invalid_branch' %]
-<p><em>Pozor:</em> Vybrali jste neplatné oddělení.</p>
+<p><em>Pozor:</em> Vybrali jste neplatnou knihovnu.</p>
 [% ELSE %]
 <p>Neznámá chyba</p>
 [% END %]
 [% END %]
 
 [% IF whole.stage == "form" %]
-<h2>Manuální vytvoření MVS požadavku</h2>
+<h2>Ruční vytvoření MVS požadavku</h2>
 <form id="freeform_create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>Obecné údaje</legend>
@@ -55,7 +55,7 @@
           [% IF whole.value.other.type.lower == "other" %]
           <option value="other" selected="selected">Jiné</option>
           [% ELSE %]
-          <option value="other">Jiné</option>
+          <option value="other">Jiný</option>
           [% END %]
         </select>
       </li>
