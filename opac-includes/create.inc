@@ -25,37 +25,37 @@
           [% IF whole.value.other.type.lower == "book" %]
           <option value="book" selected="selected">Book</option>
           [% ELSE %]
-          <option value="book">Book</option>
+          <option value="book">Kniha</option>
           [% END %]
           [% IF whole.value.other.type.lower == "chapter" %]
           <option value="chapter" selected="selected">Chapter</option>
           [% ELSE %]
-          <option value="chapter">Chapter</option>
+          <option value="chapter">Kapitola</option>
           [% END %]
           [% IF whole.value.other.type.lower == "journal" %]
           <option value="journal" selected="selected">Journal</option>
           [% ELSE %]
-          <option value="journal">Journal</option>
+          <option value="journal">Periodikum</option>
           [% END %]
           [% IF whole.value.other.type.lower == "article" %]
           <option value="article" selected="selected">Journal article</option>
           [% ELSE %]
-          <option value="article">Journal article</option>
+          <option value="article">Článek v periodiku</option>
           [% END %]
           [% IF whole.value.other.type.lower == "thesis" %]
           <option value="thesis" selected="selected">Thesis</option>
           [% ELSE %]
-          <option value="thesis">Thesis</option>
+          <option value="thesis">Závěrečné práce</option>
           [% END %]
           [% IF whole.value.other.type.lower == "conference" %]
           <option value="conference" selected="selected">Conference</option>
           [% ELSE %]
-          <option value="conference">Conference</option>
+          <option value="conference">Konference</option>
           [% END %]
           [% IF whole.value.other.type.lower == "other" %]
           <option value="other" selected="selected">Other</option>
           [% ELSE %]
-          <option value="other">Other</option>
+          <option value="other">Jinér</option>
           [% END %]
         </select>
       </li>
@@ -109,8 +109,8 @@
   </fieldset>
 
   <fieldset class="action">
-    <input class="btn btn-default" type="submit" value="Create"/>
-    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
+    <input class="btn btn-default" type="submit" value="Vytvořit"/>
+    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
   <input type="hidden" name="stage" value="form" />
