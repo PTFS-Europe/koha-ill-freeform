@@ -26,7 +26,7 @@
             <input type="text" name="year" id="year" value="[% whole.value.other.year %]" />
         </li>
         <li>
-            <label for="part_edition"Díl / Edice:</label>
+            <label for="part_edition">Díl / Edice:</label>
             <input type="text" name="part_edition" id="part_edition" value="[% whole.value.other.part_edition %]" />
         </li>
         <li>
