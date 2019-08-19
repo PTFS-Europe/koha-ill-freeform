@@ -1,5 +1,5 @@
 <fieldset id="book-freeform-fieldset" class="rows">
-    <legend>Book details</legend>
+    <legend>Podrobnosti titulu</legend>
     <ol id="publication-freeform-fields">
         <li>
             <label for="title">Název:</label>
