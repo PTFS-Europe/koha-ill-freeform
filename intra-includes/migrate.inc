@@ -1,12 +1,12 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Please Pozor:</em> Mandatory field Identifier is missing.</p>
+<p><em>Please Pozor:</em> Povinné pole Identifikátor není vyplněno.</p>
 [% ELSIF whole.status == 'missing_branch' %]
 <p><em>Please Pozor:</em> Oddělení je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
-<p><em>Please Pozor:</em> The borrower details you entered are invalid.</p>
+<p><em>Please Pozor:</em> Neplatné podrobnosti čtenáře.</p>
 [% ELSIF whole.status == 'invalid_branch' %]
-<p><em>Please Pozor:</em> Vybrané oddělení není sprívné.</p>
+<p><em>Please Pozor:</em> Vybrané oddělení není správné.</p>
 [% ELSE %]
 <p>Unhandled error</p>
 [% END %]
@@ -16,10 +16,10 @@
 <h2>Přesunout MVS požadavek</h2>
 <form id="freeform_migrate_form" method="POST" action=[% here %]>
   <fieldset class="rows">
-    <legend>General details</legend>
+    <legend>Základní informace</legend>
     <ol id="general-freeform-fields">
       <li>
-        <label class="required" for="type">Type:</label>
+        <label class="required" for="type">Typ:</label>
         <select name="type" id="type">
           <option value=""/>
           [% IF whole.value.other.type.lower == "book" %]
