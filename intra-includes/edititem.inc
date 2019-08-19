@@ -1,6 +1,6 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_type' %]
-<p><em>Pozor:</em> Povinné pole Typ není vyplněno.</p>
+<p><em>Pozor:</em> Povinné pole Typ požadovaného dokumentu není vyplněno.</p>
 [% ELSE %]
 <p>Neznámá chyba</p>
 [% END %]
