@@ -9,7 +9,7 @@
 <h2>Upravit ručně vložený MVS požadavek</h2>
 <form id="freeform_edit_form" method="POST" action=[% here %]>
   <fieldset class="rows">
-    <legend>General details</legend>
+    <legend>Podrobnosti</legend>
     <ol id="general-freeform-fields">
       <li>
         <label class="required" for="type">Type:</label>
