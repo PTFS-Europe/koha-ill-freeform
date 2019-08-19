@@ -1,12 +1,12 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_type' %]
-<p><em>Please Note:</em> Mandatory field Type is missing.</p>
+<p><em>Please Note:</em> Povinné pole Typ není vyplněno.</p>
 [% ELSE %]
 <p>Unhandled error</p>
 [% END %]
 [% END %]
 
-<h2>Edit a manual ILL request</h2>
+<h2>Upravit ručně vložený MVS požadavek</h2>
 <form id="freeform_edit_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>General details</legend>
@@ -16,39 +16,39 @@
         <select name="type" id="type">
           <option value=""/>
           [% IF whole.value.other.type.lower == "book" %]
-          <option value="book" selected="selected">Book</option>
+          <option value="book" selected="selected">Kniha</option>
           [% ELSE %]
-          <option value="book">Book</option>
+          <option value="book">Kniha</option>
           [% END %]
           [% IF whole.value.other.type.lower == "chapter" %]
-          <option value="chapter" selected="selected">Chapter</option>
+          <option value="chapter" selected="selected">Kapitola</option>
           [% ELSE %]
-          <option value="chapter">Chapter</option>
+          <option value="chapter">Kapitola</option>
           [% END %]
           [% IF whole.value.other.type.lower == "journal" %]
-          <option value="journal" selected="selected">Journal</option>
+          <option value="journal" selected="selected">Periodikum</option>
           [% ELSE %]
           <option value="journal">Journal</option>
           [% END %]
           [% IF whole.value.other.type.lower == "article" %]
-          <option value="article" selected="selected">Journal article</option>
+          <option value="article" selected="selected">Článek v periodiku</option>
           [% ELSE %]
-          <option value="article">Journal article</option>
+          <option value="article">Článek v periodiku</option>
           [% END %]
           [% IF whole.value.other.type.lower == "thesis" %]
-          <option value="thesis" selected="selected">Thesis</option>
+          <option value="thesis" selected="selected">Závěrečná práce</option>
           [% ELSE %]
-          <option value="thesis">Thesis</option>
+          <option value="thesis">Závěrečná práce</option>
           [% END %]
           [% IF whole.value.other.type.lower == "conference" %]
-          <option value="conference" selected="selected">Conference</option>
+          <option value="conference" selected="selected">Konference</option>
           [% ELSE %]
-          <option value="conference">Conference</option>
+          <option value="conference">Konference</option>
           [% END %]
           [% IF whole.value.other.type.lower == "other" %]
-          <option value="other" selected="selected">Other</option>
+          <option value="other" selected="selected">Jiný</option>
           [% ELSE %]
-          <option value="other">Other</option>
+          <option value="other">Jiný</option>
           [% END %]
         </select>
       </li>
@@ -77,12 +77,12 @@
     </ol>
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
-      Add new field
+      Vložit nové pole
     </button> 
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Update"/>
-    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
+    <input type="submit" value="Aktualizovat"/>
+    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
   <input type="hidden" name="illrequest_id" value="[% whole.value.other.illrequest_id %]" />
   <input type="hidden" name="method" value="edititem" />
@@ -101,7 +101,7 @@
                     '<button type="button" class="btn btn-danger btn-sm ' +
                     'delete-new-field">' +
                     '<span class="fa fa-delete">' +
-                    '</span>Delete</button></li>';
+                    '</span>Smazat</button></li>';
                 $('#freeform-fields').append(row);
             });
             $('#freeform-fields').on('click', '.delete-new-field',
