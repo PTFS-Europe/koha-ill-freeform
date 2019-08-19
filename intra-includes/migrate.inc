@@ -1,14 +1,14 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Please Pozor:</em> Povinné pole Identifikátor není vyplněno.</p>
+<p><em>PPozor:</em> Povinné pole Identifikátor není vyplněno.</p>
 [% ELSIF whole.status == 'missing_branch' %]
-<p><em>Please Pozor:</em> Oddělení je povinné pole.</p>
+<p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
-<p><em>Please Pozor:</em> Neplatné podrobnosti čtenáře.</p>
+<p><em>Pozor:</em> Vložili jste neplatné údaje o čtenáři.</p>
 [% ELSIF whole.status == 'invalid_branch' %]
-<p><em>Please Pozor:</em> Vybrané oddělení není správné.</p>
+<p><em>Pozor:</em> Vybrali jste neplatnou knihovnu.</p>
 [% ELSE %]
-<p>Unhandled error</p>
+<p>Neznámá chyba</p>
 [% END %]
 [% END %]
 
