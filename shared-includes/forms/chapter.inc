@@ -44,7 +44,7 @@
     </ol>
 </fieldset>
 <fieldset id="chapter-freeform-fieldset" class="rows">
-    <legend>Chapter details</legend>
+    <legend>Detaily kapitoly</legend>
     <ol id="chapter-freeform-fields">
         <li>
             <label for="chapter_author">Autor:</label>
