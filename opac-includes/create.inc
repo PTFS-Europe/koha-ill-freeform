@@ -1,6 +1,6 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Pozor:</em> Chybí povinné pole Identifikátor.</p>
+<p><em>Pozor:</em> povinné pole Identifikátor není vyplněno.</p>
 [% ELSIF whole.status == 'missing_branch' %]
 <p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
