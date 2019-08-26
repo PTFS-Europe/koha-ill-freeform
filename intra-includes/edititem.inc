@@ -1,6 +1,6 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_type' %]
-<p><em>Pozor:</em> Povinné pole Typ požadovaného dokumentu není vyplněno.</p>
+<p><em>Pozor:</em> povinné pole Typ požadovaného dokumentu není vyplněno.</p>
 [% ELSE %]
 <p>Neznámá chyba</p>
 [% END %]
@@ -69,7 +69,7 @@
       <li class="form-horizontal">
         <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% values.$i %]">
         <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
-            <span class="fa fa-delete"></span>Delete
+            <span class="fa fa-delete"></span>Smazat
         </button></li>
       </li>
       [% i = i + 1 %]
