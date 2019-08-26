@@ -1,6 +1,6 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Pozor:</em> Povinné pole Identifikátor není vyplněno.</p>
+<p><em>Pozor:</em> povinné pole Identifikátor není vyplněno.</p>
 [% ELSIF whole.status == 'missing_branch' %]
 <p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
@@ -112,7 +112,7 @@
   </fieldset>
   <fieldset class="action">
     <input type="submit" value="Přesunout"/>
-    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
+    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
 </form>
 [% BLOCK backend_jsinclude %]
