@@ -957,6 +957,8 @@ sub _openurl_to_ill {
         author  => 'author',
         aulast  => 'article_author',
         pages   => 'pages',
+	ctitle  => 'chapter',
+	clast   => 'chapter_author'
     };
 
     my $transform_value = {
