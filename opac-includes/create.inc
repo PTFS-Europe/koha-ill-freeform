@@ -110,7 +110,7 @@
 
   <fieldset class="action">
     <input class="btn btn-default" type="submit" value="Create"/>
-    <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
+    <a class="cancel" href="/cgi-bin/koha/opac-illrequests.pl">Cancel</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
   <input type="hidden" name="stage" value="form" />
