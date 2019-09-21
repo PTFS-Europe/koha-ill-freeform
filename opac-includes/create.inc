@@ -57,6 +57,11 @@
           [% ELSE %]
           <option value="other">Other</option>
           [% END %]
+          [% IF whole.value.other.type.lower == "resource" %]
+          <option value="resource" selected="selected">Generic resource</option>
+          [% ELSE %]
+          <option value="resource">Generic resource</option>
+          [% END %]
         </select>
       </li>
     </ol>
