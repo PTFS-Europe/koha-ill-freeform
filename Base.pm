@@ -1003,6 +1003,8 @@ sub _openurl_to_ill {
         $return->{custom_value} = join("\0", @{$custom_value});
     }
     $params->{other} = $return;
+    $params->{custom_keys} = $custom_key;
+    $params->{custom_values} = $custom_value;
     return $params;
 
 }

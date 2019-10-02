@@ -75,9 +75,9 @@
     <legend>Custom fields</legend>
     <ol id="freeform-fields">
       [% i = 0 %]
-      [% FOR key IN custom_keys %]
+      [% FOR key IN whole.value.custom_keys %]
       <li class="form-horizontal">
-        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% custom_values.$i %]">
+        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% whole.value.custom_values.$i %]">
         <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
             <span class="fa fa-delete"></span>Delete
         </button></li>
