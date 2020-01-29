@@ -182,6 +182,7 @@ sub create {
     my ( $self, $params ) = @_;
     my $other = $params->{other};
     my $stage = $other->{stage};
+    my $core_fields = _get_core_string();
     if ( !$stage || $stage eq 'init' ) {
 
         # First thing we want to do, is check if we're receiving
@@ -202,6 +203,7 @@ sub create {
             method  => 'create',
             stage   => 'form',
             value   => $params,
+            core    => $core_fields
         };
     }
     elsif ( $stage eq 'form' ) {
@@ -241,6 +243,7 @@ sub create {
                 value   => $params,
                 method  => "create",
                 stage   => "form",
+                core    => $core_fields
             };
         }
 
@@ -256,6 +259,7 @@ sub create {
             value   => {},
             method  => "create",
             stage   => "form",
+            core    => $core_fields
         };
         my $failed = 0;
         if ( !$other->{'type'} ) {
@@ -332,6 +336,7 @@ sub create {
             stage   => 'commit',
             next    => 'illview',
             value   => $request_details,
+            core    => $core_fields
         };
     }
     else {
@@ -355,6 +360,9 @@ sub create {
 sub edititem {
     my ( $self, $params ) = @_;
 
+    my $core = _get_core_fields();
+    my $core_fields = _get_core_string();
+
     # Don't allow editing of submitted requests
     return { method => 'illlist' } if $params->{request}->status ne 'NEW';
 
@@ -363,7 +371,6 @@ sub edititem {
     if ( !$stage || $stage eq 'init' ) {
 
 		my $attrs = $params->{request}->illrequestattributes->unblessed;
-		my $core = _get_core_fields();
 		# We need to identify which parameters are custom, and pass them
 		# to the template in a predefined form
 		my $custom_keys = [];
@@ -387,6 +394,7 @@ sub edititem {
             method  => 'edititem',
             stage   => 'form',
             value   => $params,
+            core    => $core_fields
         };
     }
     elsif ( $stage eq 'form' ) {
@@ -429,6 +437,7 @@ sub edititem {
                 value   => $params,
                 method  => "edititem",
                 stage   => "form",
+                core    => $core_fields
             };
         }
 		# We don't want the request ID param getting any further
@@ -442,6 +451,7 @@ sub edititem {
 			value   => {},
 			method  => "edititem",
 			stage   => "form",
+            core    => $core_fields
 		};
         # Received completed details of form.  Validate and create request.
         ## Validate
@@ -497,6 +507,7 @@ sub edititem {
             stage   => 'commit',
             next    => 'illview',
             value   => $request_details,
+            core    => $core_fields
         };
     }
     else {
@@ -626,6 +637,8 @@ sub migrate {
     my $stage = $other->{stage};
     my $step  = $other->{step};
 
+    my $core_fields = _get_core_string();
+
     # We may be recieving a submitted form due to an additional
     # custom field being added or deleted, or the material type
     # having been changed, so check for these things
@@ -665,6 +678,7 @@ sub migrate {
             value   => $params,
             method  => "create",
             stage   => "form",
+            core    => $core_fields
         };
     }
 
@@ -710,6 +724,7 @@ sub migrate {
             stage   => 'commit',
             next    => 'emigrate',
             value   => $params,
+            core    => $core_fields
         };
     }
 
@@ -733,6 +748,7 @@ sub migrate {
             stage   => 'commit',
             next    => 'illview',
             value   => $params,
+            core    => $core_fields
         };
     }
 }
@@ -871,6 +887,17 @@ sub _get_request_details {
     }
 
     return $return;
+}
+
+=head3 _get_core_string
+
+Return a comma delimited, quoted, string of core field keys
+
+=cut
+
+sub _get_core_string {
+    my $core = _get_core_fields();
+    return join(",", map { '"'.$_.'"' } keys %{$core});
 }
 
 =head3 _get_core_fields

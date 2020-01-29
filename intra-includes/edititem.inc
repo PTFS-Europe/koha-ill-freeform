@@ -64,29 +64,9 @@
   [% IF type %]
       [% INCLUDE "${cwd}/shared-includes/forms/${type}.inc" %]
   [% END %]
-  <fieldset class="rows">
-    <legend>Custom fields</legend>
-    <ol id="freeform-fields">
-      [% keys = whole.value.other.custom_key.split('\0') %]
-      [% values = whole.value.other.custom_value.split('\0') %]
-      [% i = 0 %]
-      [% FOREACH key IN keys %]
-      <li class="form-horizontal">
-        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% values.$i %]">
-        <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
-            <span class="fa fa-delete"></span>Delete
-        </button></li>
-      </li>
-      [% i = i + 1 %]
-      [% END %]
-    </ol>
-    <button type="button" id="add-new-fields" class="btn btn-default">
-      <span class="fa fa-plus"></span>
-      Add new field
-    </button> 
-  </fieldset>
+  [% INCLUDE "${cwd}/shared-includes/custom_fields.inc" %]
   <fieldset class="action">
-    <input type="submit" value="Update"/>
+    <input id="ill-submit" type="submit" value="Update"/>
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
   </fieldset>
   <input type="hidden" name="illrequest_id" value="[% whole.value.other.illrequest_id %]" />
@@ -97,31 +77,7 @@
 [% BLOCK backend_jsinclude %]
 <script type="text/javascript">
     // <![CDATA[]
-        document.addEventListener("DOMContentLoaded", function() {
-            $('#add-new-fields').click(function(e) {
-                e.preventDefault();
-                var row = '<li class="form-horizontal">' +
-                    '<input type="text" class="custom-name" name="custom_key">' +
-                    '<input type="text" id="custom-value" name="custom_value"> '+
-                    '<button type="button" class="btn btn-danger btn-sm ' +
-                    'delete-new-field">' +
-                    '<span class="fa fa-delete">' +
-                    '</span>Delete</button></li>';
-                $('#freeform-fields').append(row);
-            });
-            $('#freeform-fields').on('click', '.delete-new-field',
-                function(event) {
-                    event.preventDefault();
-                    $(event.target).parent().remove();
-                }
-            );
-            $('#type').change(function() {
-                $('#freeform_edit_form').prepend(
-                    '<input type="hidden" name="change_type" value="1" />'
-                );
-                $('#freeform_edit_form').submit();
-            });
-        });
+    [% INCLUDE "${cwd}/shared-includes/shared.js" %]
     // ]]>
 </script>
 [% END %]
