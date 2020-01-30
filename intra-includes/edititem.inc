@@ -78,7 +78,7 @@
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
       Vložit nové pole
-    </button> 
+    </button>
   </fieldset>
   <fieldset class="action">
     <input type="submit" value="Aktualizovat"/>
