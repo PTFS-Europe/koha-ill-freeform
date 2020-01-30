@@ -92,7 +92,7 @@
     <ol>
       <li>
         <label class="required" for="cardnumber">
-          Číslo průkazky, uživatelské jméno nebo příjmení:
+          Číslo průkazu, uživatelské jméno nebo příjmení:
         </label>
         <input type="text" name="cardnumber" id="cardnumber"
                type="text" value="" />
