@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '<button type="button" class="btn btn-danger btn-sm ' +
             'delete-new-field">' +
             '<span class="fa fa-delete">' +
-            '</span>Delete</button></li>';
+            '</span>Smazat</button></li>';
         $('#freeform-fields').append(row);
     });
     $('#freeform-fields').on('click', '.delete-new-field',
