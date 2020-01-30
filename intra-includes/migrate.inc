@@ -85,10 +85,10 @@
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
       Vložit nové pole
-    </button> 
+    </button>
   </fieldset>
   <fieldset class="rows">
-    <legend>Patron options</legend>
+    <legend>Informace o čtenáři</legend>
     <ol>
       <li>
         <label class="required" for="cardnumber">
