@@ -1,5 +1,5 @@
 <fieldset id="book-freeform-fieldset" class="rows">
-    <legend>Detaily titulu</legend>
+    <legend>Podrobnosti titulu</legend>
     <ol id="publication-freeform-fields">
         <li>
             <label for="title">Název:</label>
@@ -44,7 +44,7 @@
     </ol>
 </fieldset>
 <fieldset id="chapter-freeform-fieldset" class="rows">
-    <legend>Detaily kapitoly</legend>
+    <legend>Podrobnosti kapitoly</legend>
     <ol id="chapter-freeform-fields">
         <li>
             <label for="chapter_author">Autor:</label>
