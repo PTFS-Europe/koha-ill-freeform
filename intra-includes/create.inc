@@ -79,7 +79,7 @@
         <label class="required" for="cardnumber">
           Card number, username or surname:
         </label>
-        <input type="text" name="cardnumber" id="cardnumber"
+        <input type="text" name="cardnumber" id="cardnumber" autocomplete="off"
                type="text" value="" />
       </li>
       <li>
@@ -96,7 +96,7 @@
     </ol>
   </fieldset>
   <fieldset class="action">
-    <input id="ill-submit" type="submit" value="Create"/>
+    <input id="ill-submit" type="submit" value="Create" disabled />
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Cancel</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
@@ -107,6 +107,31 @@
 <script type="text/javascript">
     // <![CDATA[]
     [% INCLUDE "${cwd}/shared-includes/shared.js" %]
+    // Require a username and branch selection
+    document.addEventListener('DOMContentLoaded', function(){
+        $('#freeform_create_form #cardnumber, #freeform_create_form #branchcode').change(function() {
+            var comp = ['#cardnumber','#branchcode'].filter(function(id) {
+                return $(id).val().length > 0;
+            });
+            $('#ill-submit').attr('disabled', comp.length < 2);
+        });
+        // Add autocomplete for patron selection
+        $('#freeform_create_form #cardnumber').autocomplete({
+            source: "/cgi-bin/koha/circ/ysearch.pl",
+            minLength: 3,
+            select: function( event, ui ) {
+                var field = ui.item.cardnumber;
+                $('#freeform_create_form #cardnumber').val(field);
+                return false;
+            }
+        })
+        .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+            return $( "<li></li>" )
+                .data( "ui-autocomplete-item", item )
+                .append( "<a>" + item.surname + ", " + item.firstname + " (" + item.cardnumber + ") <small>" + item.address + " " + item.city + " " + item.zipcode + " " + item.country + "</small></a>" )
+                .appendTo( ul );
+        };
+    });
     // ]]>
 </script>
 [% END %]
