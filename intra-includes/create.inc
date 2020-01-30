@@ -85,7 +85,7 @@
     <button type="button" id="add-new-fields" class="btn btn-default">
       <span class="fa fa-plus"></span>
       Přidat nové pole
-    </button> 
+    </button>
   </fieldset>
   <fieldset class="rows">
     <legend>Údaje o čtenáři</legend>
