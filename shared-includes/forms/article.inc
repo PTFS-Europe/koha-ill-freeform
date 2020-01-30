@@ -2,7 +2,7 @@
     <legend>Podrobnosti periodika</legend>
     <ol id="journal-freeform-fields">
         <li>
-            <label for="title">Title:</label>
+            <label for="title">Název:</label>
             <input type="text" name="title" id="title" value="[% whole.value.other.title %]" />
         </li>
         <li>
@@ -28,22 +28,22 @@
     </ol>
 </fieldset>
 <fieldset id="article-freeform-fieldset" class="rows">
-    <legend>Article details</legend>
+    <legend>Podrobnosti článku</legend>
     <ol id="article-freeform-fields">
         <li>
-            <label for="article_title">Article title:</label>
+            <label for="article_title">Název článku:</label>
             <input type="text" name="article_title" id="article_title" value="[% whole.value.other.article_title %]" />
         </li>
         <li>
-            <label for="article_author">Article author:</label>
+            <label for="article_author">Autor článku:</label>
             <input type="text" name="article_author" id="article_author" value="[% whole.value.other.article_author %]" />
         </li>
         <li>
-            <label for="published_date">Publication date:</label>
+            <label for="published_date">Datum vydání:</label>
             <input type="text" name="published_date" id="published_date" value="[% whole.value.other.published_date %]" />
         </li>
         <li>
-            <label for="pages">Pages:</label>
+            <label for="pages">Strany:</label>
             <input type="text" name="pages" id="pages" value="[% whole.value.other.pages %]" />
         </li>
     </ol>
