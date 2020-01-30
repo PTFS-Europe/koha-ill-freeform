@@ -1,5 +1,5 @@
 <fieldset class="rows">
-	<legend>Custom fields</legend>
+	<legend>Vlastní pole</legend>
 	<ol id="freeform-fields">
 		[% keys = whole.value.other.custom_key.split('\0') %]
 		[% values = whole.value.other.custom_value.split('\0') %]
