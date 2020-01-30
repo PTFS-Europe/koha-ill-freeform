@@ -1,5 +1,5 @@
 <fieldset id="book-freeform-fieldset" class="rows">
-    <legend>Detail knihy</legend>
+    <legend>Podrobnosti titulu</legend>
     <ol id="publication-freeform-fields">
         <li>
             <label for="title">Název:</label>
@@ -22,7 +22,7 @@
             <input type="text" name="published_place" id="published_place" value="[% whole.value.other.published_place %]" />
         </li>
         <li>
-            <label for="year">Year:</label>
+            <label for="year">Rok:</label>
             <input type="text" name="year" id="year" value="[% whole.value.other.year %]" />
         </li>
         <li>

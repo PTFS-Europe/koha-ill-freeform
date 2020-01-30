@@ -1046,7 +1046,7 @@ sub _can_create_request {
     my ($params) = @_;
     return (
         defined $params->{'stage'} &&
-        $params->{'stage'} eq 'form' && 
+        $params->{'stage'} eq 'form' &&
         !defined $params->{'add_new_custom'} &&
         !defined $params->{'custom_delete'} &&
         !defined $params->{'change_type'}
