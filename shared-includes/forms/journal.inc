@@ -1,5 +1,5 @@
 <fieldset id="journal-freeform-fieldset" class="rows">
-    <legend>Detaily periodika</legend>
+    <legend>Podrobnosti periodika</legend>
     <ol id="journal-freeform-fields">
         <li>
             <label for="title">Název:</label>
