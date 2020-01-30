@@ -1,5 +1,5 @@
 <fieldset id="conference-freeform-fieldset" class="rows">
-    <legend>Detaily konference</legend>
+    <legend>Podrobnosti konference</legend>
     <ol id="conference-freeform-fields">
         <li>
             <label for="title">Název konference:</label>
@@ -18,7 +18,7 @@
             <input type="text" name="venue" id="venue" value="[% whole.value.other.venue %]" />
         </li>
         <li>
-            <label for="sponsor">Sponsor:</label>
+            <label for="sponsor">Sponzor:</label>
             <input type="text" name="sponsor" id="sponsor" value="[% whole.value.other.sponsor %]" />
         </li>
         <li>
