@@ -66,9 +66,13 @@ well as the option to enter additional fields with arbitrary names & values.
 sub new {
 
     # -> instantiate the backend
-    my ($class) = @_;
+    my ($class, $other) = @_;
+    my $framework =
+        defined $other->{config}->{configuration}->{raw_config}->{framework} ?
+        $other->{config}->{configuration}->{raw_config}->{framework} :
+        'FA';
     my $self = {
-        framework => 'FA'
+        framework => $framework
     };
     bless( $self, $class );
     return $self;
@@ -1089,8 +1093,7 @@ sub _freeform2biblio {
     # Suppress the record
     _set_suppression($record);
 
-    # We hardcode a framework name of 'FA', which will need to exist
-    # All this stuff should be configurable
+    # Create a biblio record
     my ($biblionumber, $biblioitemnumber) =
         AddBiblio( $record, $self->{framework} );
 
