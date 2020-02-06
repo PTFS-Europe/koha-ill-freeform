@@ -96,7 +96,7 @@
     </ol>
   </fieldset>
   <fieldset class="action">
-    <input id="ill-submit" type="submit" value="Create" disabled />
+    <input id="ill-submit" type="submit" value="Vytvořit" disabled />
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
