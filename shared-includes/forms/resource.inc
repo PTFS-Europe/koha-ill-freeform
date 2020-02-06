@@ -1,5 +1,5 @@
 <fieldset id="resource-freeform-fieldset" class="rows">
-    <legend>Podrobnosti výchozího typu zdroje</legend>
+    <legend>Podrobnosti obecného zdroje</legend>
     <ol id="resource-freeform-fields">
         <li>
             <label for="title">Název:</label>
@@ -30,7 +30,7 @@
             <input type="text" name="part_edition" id="part_edition" value="[% whole.value.other.part_edition %]" />
         </li>
         <li>
-            <label for="volume">Č:</label>
+            <label for="volume">Číslo:</label>
             <input type="text" name="volume" id="volume" value="[% whole.value.other.volume %]" />
         </li>
         <li>
