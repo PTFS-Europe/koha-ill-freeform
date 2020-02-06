@@ -1,6 +1,6 @@
 [% IF whole.error %]
 [% IF whole.status == 'missing_identifier' %]
-<p><em>Pozor:</em> povinné pole Identifikátor není vyplněno</p>
+<p><em>Pozor:</em> Povinné pole Identifikátor není vyplněno.</p>
 [% ELSIF whole.status == 'missing_branch' %]
 <p><em>Pozor:</em> Knihovna je povinné pole.</p>
 [% ELSIF whole.status == 'invalid_borrower' %]
@@ -8,7 +8,7 @@
 [% ELSIF whole.status == 'invalid_branch' %]
 <p><em>Pozor:</em> Vybrali jste neplatnou knihovnu.</p>
 [% ELSE %]
-<p>Neznámá chyba</p>
+<p>>Neznámá chyba</p>
 [% END %]
 [% END %]
 
@@ -57,6 +57,11 @@
           [% ELSE %]
           <option value="other">Jiný</option>
           [% END %]
+          [% IF whole.value.other.type.lower == "resource" %]
+          <option value="resource" selected="selected">Obecný zdroj</option>
+          [% ELSE %]
+          <option value="resource">Obecný zdroj</option>
+          [% END %]
         </select>
       </li>
     </ol>
@@ -66,27 +71,7 @@
   [% IF type %]
       [% INCLUDE "${cwd}/shared-includes/forms/${type}.inc" %]
   [% END %]
-  <fieldset class="rows">
-    <legend>Uživatelská pole</legend>
-    <ol id="freeform-fields">
-      [% keys = whole.value.other.custom_key.split('\0') %]
-      [% values = whole.value.other.custom_value.split('\0') %]
-      [% i = 0 %]
-      [% FOREACH key IN keys %]
-      <li class="form-horizontal">
-        <input type="text" class="custom-name" name="custom_key" value="[% key %]"><input type="text" name="custom_value" id="custom-value" value="[% values.$i %]">
-        <button value="[% i %]" name="custom_delete" type="submit" class="btn btn-danger btn-sm delete-new-field">
-            <span class="fa fa-delete"></span>Smazat
-        </button></li>
-      </li>
-      [% i = i + 1 %]
-      [% END %]
-    </ol>
-    <button type="button" id="add-new-fields" class="btn btn-default">
-      <span class="fa fa-plus"></span>
-      Přidat nové pole
-    </button>
-  </fieldset>
+  [% INCLUDE "${cwd}/shared-includes/custom_fields.inc" %]
   <fieldset class="rows">
     <legend>Údaje o čtenáři</legend>
     <ol>
@@ -94,11 +79,11 @@
         <label class="required" for="cardnumber">
           Číslo průkazu, uživatelské jméno nebo příjmení:
         </label>
-        <input type="text" name="cardnumber" id="cardnumber"
+        <input type="text" name="cardnumber" id="cardnumber" autocomplete="off"
                type="text" value="" />
       </li>
       <li>
-        <label class="required" for="branchcode">Cílová knihovna:</label>
+        <label class="required" for="branchcode">Knihovna, kde si vyzvedne dokument</label>
         <select id="branchcode" name="branchcode">
           <option value="" />
           [% FOREACH branch IN branches %]
@@ -111,7 +96,7 @@
     </ol>
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Vytvořit"/>
+    <input id="ill-submit" type="submit" value="Create" disabled />
     <a class="cancel" href="/cgi-bin/koha/ill/ill-requests.pl">Zrušit</a>
   </fieldset>
   <input type="hidden" name="method" value="create" />
@@ -121,38 +106,39 @@
 [% BLOCK backend_jsinclude %]
 <script type="text/javascript">
     // <![CDATA[]
-        document.addEventListener('DOMContentLoaded', function() {
-            $('#add-new-fields').click(function(e) {
-                e.preventDefault();
-                var row = '<li class="form-horizontal">' +
-                    '<input type="text" class="custom-name" name="custom_key">' +
-                    '<input type="text" id="custom-value" name="custom_value"> '+
-                    '<button type="button" class="btn btn-danger btn-sm ' +
-                    'delete-new-field">' +
-                    '<span class="fa fa-delete">' +
-                    '</span>Smazat</button></li>';
-                $('#freeform-fields').append(row);
+    [% INCLUDE "${cwd}/shared-includes/shared.js" %]
+    // Require a username and branch selection
+    document.addEventListener('DOMContentLoaded', function(){
+        $('#freeform_create_form #cardnumber, #freeform_create_form #branchcode').change(function() {
+            var comp = ['#cardnumber','#branchcode'].filter(function(id) {
+                return $(id).val().length > 0;
             });
-            $('#freeform-fields').on('click', '.delete-new-field',
-                function(event) {
-                    event.preventDefault();
-                    $(event.target).parent().remove();
-                }
-            );
-            $('#type').change(function() {
-                $('#freeform_create_form').prepend(
-                    '<input type="hidden" name="change_type" value="1" />'
-                );
-                $('#freeform_create_form').submit();
-            });
+            $('#ill-submit').attr('disabled', comp.length < 2);
         });
+        // Add autocomplete for patron selection
+        $('#freeform_create_form #cardnumber').autocomplete({
+            source: "/cgi-bin/koha/circ/ysearch.pl",
+            minLength: 3,
+            select: function( event, ui ) {
+                var field = ui.item.cardnumber;
+                $('#freeform_create_form #cardnumber').val(field);
+                return false;
+            }
+        })
+        .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+            return $( "<li></li>" )
+                .data( "ui-autocomplete-item", item )
+                .append( "<a>" + item.surname + ", " + item.firstname + " (" + item.cardnumber + ") <small>" + item.address + " " + item.city + " " + item.zipcode + " " + item.country + "</small></a>" )
+                .appendTo( ul );
+        };
+    });
     // ]]>
 </script>
 [% END %]
 
 [% ELSIF whole.stage == "borrowers" %]
 <!-- We need to clarify the borrower that has been requested. -->
-<h2>Výběr čtenáře</h2>
+<h2>Borrower selection</h2>
 <form method="POST" action=[% here %]>
   [% FOREACH prop IN whole.value.other.keys %]
     [% IF prop != 'custom_key' &&  prop != 'custom_value' && prop != 'cardnumber' %]
@@ -168,12 +154,12 @@
   [% i = i + 1 %]
   [% END %]
   <fieldset class="rows">
-    <legend>Tito čtenáři odpovídají příjmení [% surname %]</legend>
+    <legend>Available borrowers for surname [% surname %]</legend>
     [% FOREACH opt IN whole.value %]
     [% IF opt.key == "brw" %]
     <ol>
       <li>
-        <label class="required" for="brw">Čtenář</label>
+        <label class="required" for="brw">Borrower</label>
         <select name="cardnumber" id="cardnumber">
           <option value=""></option>
           [% FOREACH brw IN opt.value %]
@@ -188,8 +174,8 @@
     [% END %]
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Vybrat"/>
-    <a class="cancel" href=[% parent %]>Zrušit</a>
+    <input type="submit" value="Select"/>
+    <a class="cancel" href=[% parent %]>Cancel</a>
   </fieldset>
 </form>
 
