@@ -23,6 +23,7 @@ use File::Basename qw( dirname );
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
 use C4::Biblio qw( AddBiblio );
+use C4::Charset qw( MarcToUTF8Record );
 
 =head1 NAME
 
@@ -1077,6 +1078,13 @@ sub _freeform2biblio {
 
     # Create the MARC::Record object and populate
     my $record = MARC::Record->new();
+
+	# Fix character set where appropriate
+	my $marcflavour = C4::Context->preference('marcflavour') || 'MARC21';
+	if ($record->encoding() eq 'MARC-8') {
+		($record) = MarcToUTF8Record($record, $marcflavour);
+	}
+
     if ($isbn) {
         my $marc_isbn = MARC::Field->new( '020', '', '', a => $isbn );
         $record->append_fields($marc_isbn);
