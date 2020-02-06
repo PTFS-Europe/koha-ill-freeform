@@ -83,7 +83,7 @@
                type="text" value="" />
       </li>
       <li>
-        <label class="required" for="branchcode">Knihovna, kde si vyzvedne dokument</label>
+        <label class="required" for="branchcode">Vyzvednout v oddělení</label>
         <select id="branchcode" name="branchcode">
           <option value="" />
           [% FOREACH branch IN branches %]
