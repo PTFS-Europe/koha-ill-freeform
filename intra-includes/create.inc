@@ -138,7 +138,7 @@
 
 [% ELSIF whole.stage == "borrowers" %]
 <!-- We need to clarify the borrower that has been requested. -->
-<h2>Borrower selection</h2>
+<h2>Výběr čtenáře</h2>
 <form method="POST" action=[% here %]>
   [% FOREACH prop IN whole.value.other.keys %]
     [% IF prop != 'custom_key' &&  prop != 'custom_value' && prop != 'cardnumber' %]
@@ -154,12 +154,12 @@
   [% i = i + 1 %]
   [% END %]
   <fieldset class="rows">
-    <legend>Available borrowers for surname [% surname %]</legend>
+    <legend>Čtenáři odpovídající příjmení [% surname %]</legend>
     [% FOREACH opt IN whole.value %]
     [% IF opt.key == "brw" %]
     <ol>
       <li>
-        <label class="required" for="brw">Borrower</label>
+        <label class="required" for="brw">Čtenář</label>
         <select name="cardnumber" id="cardnumber">
           <option value=""></option>
           [% FOREACH brw IN opt.value %]
@@ -174,8 +174,8 @@
     [% END %]
   </fieldset>
   <fieldset class="action">
-    <input type="submit" value="Select"/>
-    <a class="cancel" href=[% parent %]>Cancel</a>
+    <input type="submit" value="Vybrat"/>
+    <a class="cancel" href=[% parent %]>Zrušit</a>
   </fieldset>
 </form>
 
