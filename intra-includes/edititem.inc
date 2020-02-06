@@ -50,6 +50,11 @@
           [% ELSE %]
           <option value="other">Jiný</option>
           [% END %]
+          [% IF whole.value.other.type.lower == "resource" %]
+          <option value="resource" selected="selected">Obecný zdroj</option>
+          [% ELSE %]
+          <option value="resource">Obecný zdroj</option>
+          [% END %]
         </select>
       </li>
     </ol>
