@@ -114,6 +114,9 @@ sub capabilities {
 
         # Return whether we are ready to display availability
         should_display_availability => sub { _can_create_request(@_) },
+
+        # View and manage a request
+        illview => sub { illview(@_); }
     };
     return $capabilities->{$name};
 }
@@ -756,6 +759,20 @@ sub migrate {
             core    => $core_fields
         };
     }
+}
+
+=head3 illview
+
+   View and manage an ILL request
+
+=cut
+
+sub illview {
+    my ($self, $params) = @_;
+
+    return {
+        method         => "illview"
+    };
 }
 
 ## Helpers
