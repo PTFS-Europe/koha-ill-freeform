@@ -492,7 +492,7 @@ sub edititem {
                     DELETE FROM illrequestattributes WHERE illrequest_id=?
                 |, undef, $request->id);
                 # Insert all current attributes for this request
-                foreach my $attr(%{$request_details}) {
+                foreach my $attr( keys %{$request_details}) {
                     my $value = $request_details->{$attr};
                     if ($value && length $value > 0){
                         my @bind = ($request->id, $attr, $value, 0);
@@ -904,7 +904,7 @@ sub _get_request_details {
         %$custom
     };
     my $core = _get_core_fields();
-    foreach my $key(%{$core}) {
+    foreach my $key( keys %{$core}) {
         $return->{$key} = $params->{other}->{$key};
     }
 
