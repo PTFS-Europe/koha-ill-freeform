@@ -68,8 +68,12 @@ sub new {
 
     # -> instantiate the backend
     my ( $class, $params ) = @_;
+    my $framework =
+        defined $params->{config}->{configuration}->{raw_config}->{framework} ?
+        $params->{config}->{configuration}->{raw_config}->{framework} :
+        'FA';
     my $self = {
-        framework => 'FA',
+        framework => $framework,
         templates => {
             'FREEFORM_MIGRATE_IN' =>
               dirname(__FILE__) . '/intra-includes/log/freeform_migrate_in.tt'
