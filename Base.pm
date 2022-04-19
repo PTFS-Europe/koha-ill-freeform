@@ -21,6 +21,8 @@ use Modern::Perl;
 use DateTime;
 use File::Basename qw( dirname );
 use Koha::Illrequests;
+use Koha::Illrequest::SupplierUpdate;
+use Koha::Illbackends::FreeForm::Processor::PrintToStderr;
 use Koha::Illrequestattribute;
 use C4::Biblio qw( AddBiblio );
 use C4::Charset qw( MarcToUTF8Record );
@@ -73,10 +75,54 @@ sub new {
         $other->{config}->{configuration}->{raw_config}->{framework} :
         'FA';
     my $self = {
-        framework => $framework
+        framework  => $framework,
+        processors => [
+            Koha::Illbackends::FreeForm::Processor::PrintToStderr->new
+        ]
     };
     bless( $self, $class );
     return $self;
+}
+
+=head3 attach_processors
+
+Receive a Koha::Illrequest::SupplierUpdate and attach
+any processors we have for it
+
+=cut
+
+sub attach_processors {
+    my ( $self, $update ) = @_;
+
+    foreach my $processor(@{$self->{processors}}) {
+        if (
+            $processor->{target_source_type} eq $update->{source_type} &&
+            $processor->{target_source_name} eq $update->{source_name}
+        ) {
+            $update->attach_processor($processor);
+        }
+    }
+}
+
+=head3 get_supplier_update
+
+Called as a backend capability, receives a local request object
+and mocks an update for it
+Return Koha::Illrequest::SupplierUpdate representing the update
+
+=cut
+
+sub get_supplier_update {
+    my ( $self, $params ) = @_;
+
+    my $request = $params->{request};
+
+    return Koha::Illrequest::SupplierUpdate->new(
+        'backend',
+        $self->name,
+        "\n**********\nThis is a mock update from the FreeForm backend\n**********\n\n",
+        $request
+    );
 }
 
 =head3 name
@@ -116,7 +162,10 @@ sub capabilities {
         should_display_availability => sub { _can_create_request(@_) },
 
         # View and manage a request
-        illview => sub { illview(@_); }
+        illview => sub { illview(@_); },
+
+        # Get updates
+        get_supplier_update => sub { $self->get_supplier_update(@_) }
     };
     return $capabilities->{$name};
 }
