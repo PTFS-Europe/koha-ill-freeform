@@ -14,7 +14,7 @@
 
 [% IF whole.stage == "form" %]
 <h2>Create a manual ILL request</h2>
-<form id="freeform_create_form" method="POST" action=[% here %]>
+<form id="create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>General details</legend>
     <ol id="general-freeform-fields">
@@ -149,10 +149,10 @@
                 }
             );
             $('#type').change(function() {
-                $('#freeform_create_form').prepend(
+                $('#create_form').prepend(
                     '<input type="hidden" name="change_type" value="1" />'
                 );
-                $('#freeform_create_form').submit();
+                $('#create_form').submit();
             });
         });
     // ]]>
