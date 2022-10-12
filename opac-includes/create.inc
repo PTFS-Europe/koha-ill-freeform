@@ -14,7 +14,7 @@
 
 [% IF whole.stage == "form" %]
 <h2>Create a manual ILL request</h2>
-<form id="freeform_create_form" method="POST" action=[% here %]>
+<form id="create_form" method="POST" action=[% here %]>
   <fieldset class="rows">
     <legend>General details</legend>
     <ol id="general-freeform-fields">
