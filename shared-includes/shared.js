@@ -18,10 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     );
     $('#type').change(function() {
-        $('#freeform_create_form').prepend(
+        $('#create_form').prepend(
             '<input type="hidden" name="change_type" value="1" />'
         );
-        $('#freeform_create_form').submit();
+        $('#create_form').submit();
     });
     $('#freeform-fields').on('keyup', '.custom-name', function() {
         var val = $(this).val();
