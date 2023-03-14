@@ -138,7 +138,7 @@
         $('#create_form #cardnumber'),
         {
           'on-select-callback': function( event, ui ) {
-            $("#create_form #cardnumber").val( ui.item.patron_id );
+            $("#create_form #cardnumber").val( ui.item.cardnumber );
             return false;
           }
         }
