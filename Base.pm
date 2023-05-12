@@ -112,7 +112,12 @@ sub capabilities {
         # Migrate
         migrate => sub { $self->migrate(@_); },
 
-        # Return whether we are ready to display availability
+        # Return whether we can create the request
+        # i.e. the create form has been submitted
+        can_create_request => sub { _can_create_request(@_) },
+
+        # This is required for compatibility
+        # with Koha versions prior to bug 33716
         should_display_availability => sub { _can_create_request(@_) },
 
         # View and manage a request
