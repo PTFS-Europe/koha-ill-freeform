@@ -20,6 +20,8 @@ package Koha::Illbackends::FreeForm::Base;
 use Modern::Perl;
 use DateTime;
 use File::Basename qw( dirname );
+use C4::Installer;
+
 use Koha::Illrequests;
 use Koha::Illrequestattribute;
 use C4::Biblio qw( AddBiblio );
@@ -331,6 +333,7 @@ sub create {
                 Koha::Illrequestattribute->new(
                     {
                         illrequest_id => $request->illrequest_id,
+                        column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
                         type          => $type,
                         value         => $value,
                         readonly      => 0
@@ -723,6 +726,7 @@ sub migrate {
             Koha::Illrequestattribute->new(
                 {
                     illrequest_id => $new_request->illrequest_id,
+                    column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
                     type          => $type,
                     value         => $value,
                 }
@@ -819,6 +823,7 @@ sub _set_requested_partners {
     Koha::Illrequestattribute->new(
         {
             illrequest_id => $args->{request}->id,
+            column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
             type          => 'requested_partners',
             value         => $args->{to}
         }
