@@ -308,39 +308,7 @@ sub create {
         }
         return $result if $failed;
 
-        # ...Populate Illrequestattributes
-        # generate $request_details
-        my $request_details = _get_request_details($params, $other);
-
-        ## Create request
-
-        # Create bib record
-        my $biblionumber = $self->_freeform2biblio($request_details);
-
-        # ...Populate Illrequest
-        my $request = $params->{request};
-        $request->biblio_id($biblionumber) unless $biblionumber == 0;
-        $request->borrowernumber( $brw->borrowernumber );
-        $request->branchcode( $params->{other}->{branchcode} );
-        $request->status('NEW');
-        $request->backend( $params->{other}->{backend} );
-        $request->placed( DateTime->now );
-        $request->updated( DateTime->now );
-        $request->store;
-
-        while ( my ( $type, $value ) = each %{$request_details} ) {
-            if ($value && length $value > 0) {
-                Koha::Illrequestattribute->new(
-                    {
-                        illrequest_id => $request->illrequest_id,
-                        column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
-                        type          => $type,
-                        value         => $value,
-                        readonly      => 0
-                    }
-                )->store;
-            }
-        }
+        $self->add_request($params, $other);
 
         ## -> create response.
         return {
@@ -970,6 +938,54 @@ sub _get_core_fields {
         volume           =>  'Volume',
         year             =>  'Year'
     };
+}
+
+
+=head3 add_request
+
+Add an ILL request
+
+=cut
+
+sub add_request {
+
+    my ( $self, $params, $other ) = @_;
+
+    # ...Populate Illrequestattributes
+    # generate $request_details
+    my $request_details = _get_request_details( $params, $other );
+
+    ## Create request
+
+    # Create bib record
+    my $biblionumber = $self->_freeform2biblio($request_details);
+
+    # ...Populate Illrequest
+    my $request = $params->{request};
+    $request->biblio_id($biblionumber) unless $biblionumber == 0;
+    $request->borrowernumber( $brw->borrowernumber );
+    $request->branchcode( $params->{other}->{branchcode} );
+    $request->status('NEW');
+    $request->backend( $params->{other}->{backend} );
+    $request->placed( DateTime->now );
+    $request->updated( DateTime->now );
+    $request->store;
+
+    while ( my ( $type, $value ) = each %{$request_details} ) {
+        if ( $value && length $value > 0 ) {
+            Koha::Illrequestattribute->new(
+                {
+                    illrequest_id => $request->illrequest_id,
+                    column_exists( 'illrequestattributes', 'backend' ) ? ( backend => "FreeForm" ) : (),
+                    type     => $type,
+                    value    => $value,
+                    readonly => 0
+                }
+            )->store;
+        }
+    }
+
+    return $request;
 }
 
 =head3 _openurl_to_ill
