@@ -123,7 +123,12 @@ sub capabilities {
         should_display_availability => sub { _can_create_request(@_) },
 
         # View and manage a request
-        illview => sub { illview(@_); }
+        illview => sub { illview(@_); },
+
+        provides_batch_requests => sub { return 1; },
+
+        # We can create ILL requests with data passed from the API
+        create_api => sub { $self->create_api(@_) }
     };
     return $capabilities->{$name};
 }
@@ -1087,6 +1092,29 @@ sub _openurl_to_ill {
     $params->{custom_values} = $custom_value;
     return $params;
 
+}
+
+=head3 create_api
+
+Create a local submission from data supplied via an
+API call
+
+=cut
+
+sub create_api {
+    my ( $self, $body, $request ) = @_;
+
+    my $patron = Koha::Patrons->find( $body->{borrowernumber} );
+
+    $body->{cardnumber} = $patron->cardnumber;
+
+    foreach my $attr ( @{ $body->{extended_attributes} } ) {
+        $body->{ $attr->{type} } = $attr->{value};
+    }
+
+    my $submission = $self->add_request( { request => $request, other => $body }, $body );
+
+    return $submission;
 }
 
 =head3 _can_create_request
