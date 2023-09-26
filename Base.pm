@@ -955,6 +955,9 @@ sub add_request {
     # generate $request_details
     my $request_details = _get_request_details( $params, $other );
 
+    my ( $brw_count, $brw ) =
+        _validate_borrower( $other->{'cardnumber'} );
+
     ## Create request
 
     # Create bib record
