@@ -1113,6 +1113,8 @@ sub create_api {
         $body->{ $attr->{type} } = $attr->{value};
     }
 
+    $body->{type} = $body->{'isbn'} ? 'book' : 'article';
+
     my $submission = $self->add_request( { request => $request, other => $body } );
 
     return $submission;
