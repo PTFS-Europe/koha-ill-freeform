@@ -313,7 +313,7 @@ sub create {
         }
         return $result if $failed;
 
-        $self->add_request($params, $other);
+        $self->add_request( { request => $params->{request}, other => $other } );
 
         my $request_details = _get_request_details( $params, $other );
 
@@ -956,14 +956,14 @@ Add an ILL request
 
 sub add_request {
 
-    my ( $self, $params, $other ) = @_;
+    my ( $self, $params ) = @_;
 
     # ...Populate Illrequestattributes
     # generate $request_details
-    my $request_details = _get_request_details( $params, $other );
+    my $request_details = _get_request_details( $params, $params->{other} );
 
     my ( $brw_count, $brw ) =
-        _validate_borrower( $other->{'cardnumber'} );
+        _validate_borrower( $params->{other}->{'cardnumber'} );
 
     ## Create request
 
@@ -1113,7 +1113,7 @@ sub create_api {
         $body->{ $attr->{type} } = $attr->{value};
     }
 
-    my $submission = $self->add_request( { request => $request, other => $body }, $body );
+    my $submission = $self->add_request( { request => $request, other => $body } );
 
     return $submission;
 }
