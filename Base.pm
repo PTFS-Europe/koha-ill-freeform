@@ -310,6 +310,8 @@ sub create {
 
         $self->add_request($params, $other);
 
+        my $request_details = _get_request_details( $params, $other );
+
         ## -> create response.
         return {
             cwd     => dirname(__FILE__),
