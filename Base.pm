@@ -979,7 +979,7 @@ sub add_request {
     $request->backend( $params->{other}->{backend} );
     $request->placed( DateTime->now );
     $request->updated( DateTime->now );
-    $request->batch_id( $params->{other}->{batch_id} ) if column_exists( 'illrequests', 'batch_id' );
+    $request->batch_id( $params->{other}->{ill_batch_id} ) if column_exists( 'illrequests', 'batch_id' );
     $request->store;
 
     while ( my ( $type, $value ) = each %{$request_details} ) {
