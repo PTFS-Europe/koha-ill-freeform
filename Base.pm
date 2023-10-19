@@ -145,7 +145,7 @@ sub metadata {
     my ( $self, $request ) = @_;
     my $attrs       = $request->illrequestattributes;
     my $metadata    = {};
-    my @ignore      = ('requested_partners');
+    my @ignore      = ('requested_partners', 'type', 'type_disclaimer_value', 'type_disclaimer_date');
 	my $core_fields = _get_core_fields();
     while ( my $attr = $attrs->next ) {
         my $type = $attr->type;
