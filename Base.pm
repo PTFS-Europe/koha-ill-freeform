@@ -478,12 +478,21 @@ sub edititem {
                 foreach my $attr( keys %{$request_details}) {
                     my $value = $request_details->{$attr};
                     if ($value && length $value > 0){
-                        my @bind = ($request->id, $attr, $value, 0);
-                        $dbh->do ( q|
-                            INSERT INTO illrequestattributes
-                            (illrequest_id, type, value, readonly) VALUES
-                            (?, ?, ?, ?)
-                        |, undef, @bind);
+                        if(column_exists( 'illrequestattributes', 'backend' ) ){
+                            my @bind = ($request->id, 'FreeForm', $attr, $value, 0);
+                            $dbh->do ( q|
+                                INSERT INTO illrequestattributes
+                                (illrequest_id, backend, type, value, readonly) VALUES
+                                (?, ?, ?, ?, ?)
+                            |, undef, @bind);
+                        }else{
+                            my @bind = ($request->id, $attr, $value, 0);
+                            $dbh->do ( q|
+                                INSERT INTO illrequestattributes
+                                (illrequest_id, type, value, readonly) VALUES
+                                (?, ?, ?, ?)
+                            |, undef, @bind);
+                        }
                     }
                 }
             }
