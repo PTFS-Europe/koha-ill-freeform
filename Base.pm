@@ -22,14 +22,14 @@ use DateTime;
 use File::Basename qw( dirname );
 use C4::Installer;
 
-use Koha::Illrequests;
-use Koha::Illrequestattribute;
+use Koha::ILL::Requests;
+use Koha::ILL::Request::Attribute;
 use C4::Biblio qw( AddBiblio );
 use C4::Charset qw( MarcToUTF8Record );
 
 =head1 NAME
 
-Koha::Illrequest::Backend::FreeForm::Base - Koha ILL Backend: FreeForm
+Koha::ILL::Request::Backend::FreeForm::Base - Koha ILL Backend: FreeForm
 
 =head1 SYNOPSIS
 
@@ -62,7 +62,7 @@ well as the option to enter additional fields with arbitrary names & values.
 
 =head3 new
 
-  my $backend = Koha::Illrequest::Backend::FreeForm->new;
+my $backend = Koha::ILL::Request::Backend::FreeForm->new;
 
 =cut
 
@@ -523,7 +523,6 @@ sub edititem {
     }
 }
 
-
 =head3 confirm
 
   my $response = $backend->confirm({ params => $params });
@@ -686,7 +685,7 @@ sub migrate {
     # anything we require specifically for this backend.
     if ( !$stage || $stage eq 'immigrate' ) {
         my $original_request =
-          Koha::Illrequests->find( $other->{illrequest_id} );
+          Koha::ILL::Requests->find( $other->{illrequest_id} );
         my $new_request = $params->{request};
         $new_request->borrowernumber( $original_request->borrowernumber );
         $new_request->branchcode( $original_request->branchcode );
@@ -707,7 +706,7 @@ sub migrate {
           { map { $_->type => $_->value } ( $original_attributes->as_list ) };
         $request_details->{migrated_from} = $original_request->illrequest_id;
         while ( my ( $type, $value ) = each %{$request_details} ) {
-            Koha::Illrequestattribute->new(
+            Koha::ILL::Request::Attribute->new(
                 {
                     illrequest_id => $new_request->illrequest_id,
                     column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
@@ -734,7 +733,7 @@ sub migrate {
         my $new_request = $params->{request};
         my $from_id = $new_request->illrequestattributes->find(
             { type => 'migrated_from' } )->value;
-        my $request     = Koha::Illrequests->find($from_id);
+        my $request     = Koha::ILL::Requests->find($from_id);
 
         # Just cancel the original request now it's been migrated away
         $request->status("REQREV");
@@ -783,7 +782,7 @@ sub _get_requested_partners {
         illrequest_id => $args->{request}->id,
         type          => 'requested_partners'
     };
-    my $res = Koha::Illrequestattributes->find($where);
+    my $res = Koha::ILL::Request::Attributes->find($where);
     return ($res) ? $res->value : undef;
 }
 
@@ -803,8 +802,8 @@ sub _set_requested_partners {
         illrequest_id => $args->{request}->id,
         type          => 'requested_partners'
     };
-    Koha::Illrequestattributes->search($where)->delete();
-    Koha::Illrequestattribute->new(
+    Koha::ILL::Request::Attributes->search($where)->delete();
+    Koha::ILL::Request::Attributes->new(
         {
             illrequest_id => $args->{request}->id,
             column_exists( 'illrequestattributes', 'backend' ) ? (backend =>"FreeForm") : (),
@@ -995,7 +994,7 @@ sub add_request {
 
     while ( my ( $type, $value ) = each %{$request_details} ) {
         if ( $value && length $value > 0 ) {
-            Koha::Illrequestattribute->new(
+            Koha::ILL::Request::Attribute->new(
                 {
                     illrequest_id => $request->illrequest_id,
                     column_exists( 'illrequestattributes', 'backend' ) ? ( backend => "FreeForm" ) : (),
