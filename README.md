@@ -3,6 +3,7 @@
 Please utilize [branch 24.05.x](https://github.com/PTFS-Europe/koha-ill-freeform/tree/24.05.x) for Koha versions 24.05 onwards.
 
 This is a temporary compatiblility measure while [Bug 35570](https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=35570) is still in community QA.
+
 If [Bug 35570](https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=35570) is pushed, this repo is made obsolete.
 
 If [Bug 35570](https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=35570) is not pushed, this repo should be turned into a Koha plugin (see [Bug 19605](https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=19605)) instead.
