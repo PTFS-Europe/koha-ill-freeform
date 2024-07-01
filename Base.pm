@@ -947,6 +947,7 @@ sub _get_core_fields {
         published_date   =>  'Publication date',
         published_place  =>  'Place of publication',
         publisher        =>  'Publisher',
+        pubmedid         =>  'PubMed ID',
         sponsor          =>  'Sponsor',
         title            =>  'Title',
         type             =>  'Type',
