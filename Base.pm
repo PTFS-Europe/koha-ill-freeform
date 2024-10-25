@@ -1049,6 +1049,7 @@ sub _openurl_to_ill {
         isbn    => 'isbn',
         issn    => 'issn',
 	rft_id  => 'doi',
+	doi  => 'doi',
         year    => 'year',
         title   => 'title',
         author  => 'author',
