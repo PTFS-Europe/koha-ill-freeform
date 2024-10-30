@@ -37,10 +37,6 @@
             <label for="isbn">ISBN:</label>
             <input type="text" name="isbn" id="isbn" value="[% whole.value.other.isbn %]" />
         </li>
-        <li>
-            <label for="doi">DOI:</label>
-            <input type="text" name="doi" id="doi" value="[% whole.value.other.doi %]" />
-        </li>
     </ol>
 </fieldset>
 <fieldset id="chapter-freeform-fieldset" class="rows">
@@ -57,6 +53,10 @@
         <li>
             <label for="pages">Pages:</label>
             <input type="text" name="pages" id="pages" value="[% whole.value.other.pages %]" />
+        </li>
+        <li>
+            <label for="doi">DOI:</label>
+            <input type="text" name="doi" id="doi" value="[% whole.value.other.doi %]" />
         </li>
     </ol>
 </fieldset>
