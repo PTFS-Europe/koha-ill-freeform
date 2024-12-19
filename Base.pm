@@ -996,15 +996,21 @@ sub add_request {
 
     while ( my ( $type, $value ) = each %{$request_details} ) {
         if ( $value && length $value > 0 ) {
-            Koha::Illrequestattribute->new(
-                {
-                    illrequest_id => $request->illrequest_id,
-                    column_exists( 'illrequestattributes', 'backend' ) ? ( backend => "FreeForm" ) : (),
-                    type     => $type,
-                    value    => $value,
-                    readonly => 0
-                }
-            )->store;
+            eval { 
+                Koha::Illrequestattribute->new(
+                    {
+                        illrequest_id => $request->illrequest_id,
+                        column_exists( 'illrequestattributes', 'backend' ) ? ( backend => "FreeForm" ) : (),
+                        type     => $type,
+                        value    => $value,
+                        readonly => 0
+                    }
+                )->store;
+             };
+            if ($@) {
+                warn "Error adding attribute $type: $@";
+            }
+
         }
     }
 
